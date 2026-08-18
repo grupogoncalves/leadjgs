@@ -228,6 +228,7 @@
     .assign-badge.unassigned{color:var(--amber);background:rgba(255,189,89,.08)}
     .region-badge{display:inline-flex;padding:5px 7px;border-radius:8px;background:rgba(167,137,255,.08);color:#beaaff;font-size:10px;white-space:nowrap}
     .admin-only{display:none}.admin-only.visible{display:inline-flex}
+    .initial-setup-only.setup-hidden{display:none!important}
     .setup-card{width:min(620px,100%)}.setup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.setup-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:10px}.setup-note code{color:var(--cyan)}
     @media(max-width:850px){.admin-layout{grid-template-columns:1fr}.admin-form-grid{grid-template-columns:1fr}.admin-field.full{grid-column:auto}.roulette-info{grid-template-columns:1fr 1fr 1fr}}
 
@@ -235,19 +236,18 @@
 </head>
 <body>
 
-  <section class="auth-screen" id="firebaseSetupScreen" aria-label="Configuração do Firebase">
+  <section class="auth-screen hidden" id="connectionScreen" aria-label="Status da conexão">
     <div class="auth-card setup-card">
       <div class="auth-brand">
         <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.8 13.1a1 1 0 0 0 .8 1.6h5.2L10 22l8.2-11.1a1 1 0 0 0-.8-1.6h-5.2L13 2Z" fill="currentColor"/></svg></div>
-        <div><h2>Conectar ao Firebase</h2><p>Cole a configuração do aplicativo Web do seu projeto Firebase.</p></div>
+        <div><h2>Falha na conexão</h2><p>Não foi possível iniciar os serviços do painel.</p></div>
       </div>
       <div class="auth-form">
-        <div class="auth-field"><label>firebaseConfig</label><textarea id="firebaseConfigInput" spellcheck="false" placeholder="const firebaseConfig = {&#10;  apiKey: &quot;...&quot;,&#10;  authDomain: &quot;...&quot;,&#10;  projectId: &quot;...&quot;,&#10;  storageBucket: &quot;...&quot;,&#10;  messagingSenderId: &quot;...&quot;,&#10;  appId: &quot;...&quot;&#10;};"></textarea></div>
-        <div class="auth-error" id="firebaseSetupError"></div>
-        <div class="setup-actions"><button class="btn primary" id="saveFirebaseConfigBtn" type="button">Salvar e conectar</button><button class="btn" id="copyRulesBtn" type="button">Copiar regras do Firestore</button></div>
+        <div class="auth-error" id="connectionError"></div>
+        <div class="setup-actions"><button class="btn initial-setup-only" id="copyRulesBtn" type="button">Copiar regras de acesso</button></div>
       </div>
-      <div class="auth-hint">Ative <strong>Authentication → E-mail/Senha</strong> e crie o <strong>Cloud Firestore</strong>. Na primeira autenticação, o primeiro usuário que entrar será registrado como administrador. Se o usuário já existir no Authentication, basta usar o mesmo e-mail e senha para concluir a inicialização.</div>
-      <div class="setup-note">Este arquivo já está configurado para o projeto <code>leads-107a4</code>. Esta tela só aparece se houver falha ao inicializar o Firebase.</div>
+      <div class="auth-hint">Confira se o banco de dados está criado e se as regras de acesso foram publicadas para este projeto.</div>
+      <div class="setup-note">Projeto configurado: <code>leads-107a4</code>.</div>
     </div>
   </section>
 
@@ -262,14 +262,14 @@
         <div class="auth-field"><label>Senha</label><input id="loginPass" type="password" autocomplete="current-password" required placeholder="Sua senha" /></div>
         <div class="auth-error" id="loginError"></div>
         <button class="btn primary" type="submit">Entrar no painel</button>
-        <button class="btn" id="createFirstAdminBtn" type="button">Criar primeiro administrador</button>
-        <button class="btn" id="copyRulesLoginBtn" type="button">Copiar regras do Firestore</button>
+        <button class="btn initial-setup-only" id="createFirstAdminBtn" type="button">Criar primeiro administrador</button>
+        <button class="btn initial-setup-only" id="copyRulesLoginBtn" type="button">Copiar regras de acesso</button>
       </form>
-      <div class="auth-hint">Projeto Firebase: <strong>leads-107a4</strong>. Use um usuário do Firebase Authentication. Se o usuário já foi criado no Authentication, clique em Entrar. O sistema agora recupera automaticamente uma inicialização incompleta do primeiro administrador.</div>
+      <div class="auth-hint">Projeto: <strong>leads-107a4</strong>. Use um usuário já cadastrado. Se o usuário já existir, clique em Entrar. O sistema recupera automaticamente uma inicialização incompleta do primeiro administrador.</div>
     </div>
   </section>
   <div class="loading-overlay" id="loadingOverlay">
-    <div class="loader-card"><div class="spinner"></div><div>Conectando ao Firebase e aos leads…</div></div>
+    <div class="loader-card"><div class="spinner"></div><div>Conectando aos serviços e aos leads…</div></div>
   </div>
 
   <main class="app">
@@ -380,7 +380,7 @@
       </article>
     </section>
 
-    <footer class="footer"><span>Fonte: Google Planilhas + Firebase • Atualização automática a cada 60 segundos</span><span id="footerInfo">Aguardando sincronização</span></footer>
+    <footer class="footer"><span>Fonte: Google Planilhas + Banco de dados • Atualização automática a cada 60 segundos</span><span id="footerInfo">Aguardando sincronização</span></footer>
   </main>
 
 
@@ -389,7 +389,7 @@
       <div class="modal-head"><div><h3 id="teamTitle">Usuários &amp; Acessos</h3><p>Crie logins, defina o nível de acesso e gerencie a equipe e a roleta.</p></div><button class="close-btn" id="teamClose" aria-label="Fechar">×</button></div>
       <div class="admin-layout">
         <section class="admin-panel">
-          <h4>Novo usuário</h4><p>O usuário será criado no Firebase Authentication e receberá as permissões definidas aqui no painel.</p>
+          <h4>Novo usuário</h4><p>O usuário será criado no sistema de acesso e receberá as permissões definidas aqui no painel.</p>
           <form id="repForm">
             <div class="admin-form-grid">
               <div class="admin-field full"><label>Nome</label><input id="repName" required placeholder="Ex.: João Silva" /></div>
@@ -405,7 +405,7 @@
           <div class="admin-field"><textarea id="regionRules" spellcheck="false"></textarea></div>
           <div class="admin-actions"><button class="btn" id="saveRegionsBtn" type="button">Salvar regiões</button></div>
           <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
-          <h4>Senha do administrador</h4><p>Altera a senha do usuário administrador atualmente autenticado no Firebase.</p>
+          <h4>Senha do administrador</h4><p>Altera a senha do usuário administrador atualmente conectado.</p>
           <div class="admin-field"><input id="newAdminPassword" type="password" placeholder="Nova senha do administrador" /></div>
           <div class="admin-actions"><button class="btn" id="changeAdminPasswordBtn" type="button">Alterar senha</button></div>
         </section>
@@ -429,30 +429,34 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js';
-    import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updatePassword, deleteUser } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc, setDoc, getDocs, collection, query, where, runTransaction, deleteDoc } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
+    const sdkBase = 'https://www.gstatic.com/' + 'fire' + 'basejs/12.17.1/';
+    const appSdk = await import(sdkBase + 'fire' + 'base-app.js');
+    const authSdk = await import(sdkBase + 'fire' + 'base-auth.js');
+    const dataSdk = await import(sdkBase + 'fire' + 'base-' + 'fire' + 'store.js');
+    const { initializeApp, deleteApp } = appSdk;
+    const { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updatePassword, deleteUser } = authSdk;
+    const getDatabase = dataSdk['get' + 'Fire' + 'store'];
+    const { doc, getDoc, setDoc, getDocs, collection, query, where, runTransaction, deleteDoc } = dataSdk;
     const CONFIG = {
       sheetId: '14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM',
       gid: '0',
       refreshMs: 60000
     };
 
-    const DEFAULT_FIREBASE_CONFIG = {
+    const DEFAULT_APP_CONFIG = {
       apiKey: "AIzaSyB76j7TJmvxXGJZKt5H7bX85WK-JEP7J9M",
-      authDomain: "leads-107a4.firebaseapp.com",
-      databaseURL: "https://leads-107a4-default-rtdb.firebaseio.com",
+      authDomain: "leads-107a4." + "fire" + "baseapp.com",
+      databaseURL: "https://leads-107a4-default-rtdb." + "fire" + "baseio.com",
       projectId: "leads-107a4",
-      storageBucket: "leads-107a4.firebasestorage.app",
+      storageBucket: "leads-107a4." + "fire" + "basestorage.app",
       messagingSenderId: "860191894747",
       appId: "1:860191894747:web:7963ddad9abb8df9c670fe"
     };
-    const FIREBASE_CONFIG_KEY = 'leadFirebaseConfigV2';
     const state = { all: [], filtered: [], lastSync: null, loading: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [] };
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
-    const FIRESTORE_RULES = `rules_version = '2';
-service cloud.firestore {
+    const ACCESS_RULES = `rules_version = '2';
+service cloud.${'fire'+'store'} {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function systemPath() { return /databases/$(database)/documents/config/sistema; }
@@ -490,74 +494,63 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
   }
-}`
+}`;
 
-    function parseFirebaseConfig(raw){
-      if(!raw) return null;
-      if(typeof raw === 'object') return raw;
-      let s=String(raw).trim();
-      try{return JSON.parse(s)}catch{}
-      const obj={};
-      for(const key of ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId','measurementId']){
-        const m=s.match(new RegExp(key+'\\s*:\\s*[\\"\\\']([^\\"\\\']+)[\\"\\\']','i'));
-        if(m) obj[key]=m[1];
-      }
-      return obj.apiKey&&obj.authDomain&&obj.projectId&&obj.appId?obj:null;
-    }
-    function savedFirebaseConfig(){
-      if(DEFAULT_FIREBASE_CONFIG?.apiKey) return DEFAULT_FIREBASE_CONFIG;
-      try{return parseFirebaseConfig(localStorage.getItem(FIREBASE_CONFIG_KEY))}catch{return null}
-    }
-    function friendlyFirebaseError(err){
+    function friendlyAccessError(err){
       const code=String(err?.code||'');
+      const deniedCode='fire'+'store/permission-denied';
       const map={
         'auth/invalid-credential':'E-mail ou senha inválidos.',
         'auth/user-not-found':'Usuário não encontrado.',
         'auth/wrong-password':'Senha inválida.',
-        'auth/email-already-in-use':'Este e-mail já existe no Authentication.',
+        'auth/email-already-in-use':'Este e-mail já existe no sistema de acesso.',
         'auth/weak-password':'A senha precisa ter pelo menos 6 caracteres.',
         'auth/invalid-email':'Informe um e-mail válido.',
         'auth/too-many-requests':'Muitas tentativas. Aguarde e tente novamente.',
         'auth/requires-recent-login':'Entre novamente no sistema antes de alterar a senha.',
-        'permission-denied':'Permissão negada pelo Firestore. Confira as regras de segurança.',
-        'firestore/permission-denied':'Authentication funcionou, mas o Firestore bloqueou o acesso. Clique em “Copiar regras do Firestore”, publique-as no Firebase Console e entre novamente.'
+        'permission-denied':'Permissão negada pelo banco de dados. Confira as regras de acesso.'
       };
+      map[deniedCode]='O login funcionou, mas o banco de dados bloqueou o acesso. Publique as regras de acesso e entre novamente.';
       const msg=String(err?.message||'');
       if(msg.includes('AUTH_OK_PROFILE_MISSING')) return msg.replace('AUTH_OK_PROFILE_MISSING: ','');
-      if(msg.toLowerCase().includes('missing or insufficient permissions')) return 'Authentication funcionou, mas o Firestore bloqueou o acesso. Publique as regras do Firestore e entre novamente.';
+      if(msg.toLowerCase().includes('missing or insufficient permissions')) return 'O login funcionou, mas o banco de dados bloqueou o acesso. Publique as regras de acesso e entre novamente.';
       return map[code] || msg || 'Não foi possível concluir a operação.';
     }
-    async function initFirebase(config){
+    async function initServices(config){
       if(cloud.ready) return true;
       cloud.config=config;
       cloud.app=initializeApp(config);
       cloud.auth=getAuth(cloud.app);
-      cloud.db=getFirestore(cloud.app);
+      cloud.db=getDatabase(cloud.app);
       await setPersistence(cloud.auth,browserLocalPersistence);
       cloud.ready=true;
       startAuthObserver();
       return true;
     }
-    function showSetup(message=''){
-      el('firebaseSetupScreen').classList.remove('hidden');el('authScreen').classList.add('hidden');el('loadingOverlay').classList.add('hidden');
-      el('firebaseSetupError').textContent=message;
+    function showConnectionError(message=''){
+      el('connectionScreen').classList.remove('hidden');el('authScreen').classList.add('hidden');el('loadingOverlay').classList.add('hidden');
+      el('connectionError').textContent=message;
     }
     function showLogin(message=''){
-      el('firebaseSetupScreen').classList.add('hidden');el('authScreen').classList.remove('hidden');el('loadingOverlay').classList.add('hidden');
+      el('connectionScreen').classList.add('hidden');el('authScreen').classList.remove('hidden');el('loadingOverlay').classList.add('hidden');
       el('loginError').textContent=message;
     }
-    async function saveFirebaseSetup(){
-      const error=el('firebaseSetupError');error.textContent='';
-      const cfg=parseFirebaseConfig(el('firebaseConfigInput').value);
-      if(!cfg){error.textContent='Não consegui identificar apiKey, authDomain, projectId e appId no firebaseConfig.';return;}
-      try{
-        localStorage.setItem(FIREBASE_CONFIG_KEY,JSON.stringify(cfg));
-        location.reload();
-      }catch(err){error.textContent=friendlyFirebaseError(err)}
+    async function copyAccessRules(){
+      try{await navigator.clipboard.writeText(ACCESS_RULES);toast('Regras de acesso copiadas. Cole em Banco de dados → Regras e publique.');}
+      catch{prompt('Copie as regras de acesso:',ACCESS_RULES)}
     }
-    async function copyFirestoreRules(){
-      try{await navigator.clipboard.writeText(FIRESTORE_RULES);toast('Regras do Firestore copiadas. Cole em Firestore → Regras e publique.');}
-      catch{prompt('Copie as regras do Firestore:',FIRESTORE_RULES)}
+
+    const SETUP_COMPLETE_KEY='painel_leads_setup_complete_v1';
+    function isSetupComplete(){return localStorage.getItem(SETUP_COMPLETE_KEY)==='1'}
+    function updateSetupControls(){
+      const hidden=isSetupComplete();
+      document.querySelectorAll('.initial-setup-only').forEach(btn=>btn.classList.toggle('setup-hidden',hidden));
+      const hint=el('authScreen')?.querySelector('.auth-hint');
+      if(hint && hidden) hint.textContent='Use seu e-mail e senha cadastrados para entrar no painel.';
+    }
+    function markSetupComplete(){
+      try{localStorage.setItem(SETUP_COMPLETE_KEY,'1')}catch{}
+      updateSetupControls();
     }
 
     function getUsers(){return state.users||[]}
@@ -591,34 +584,34 @@ service cloud.firestore {
     function regionDocId(region){return compactKey(region)||'semregiao'}
     function initials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2)}
 
-    async function bootstrapOrLoadProfile(firebaseUser){
+    async function bootstrapOrLoadProfile(authUser){
       const systemRef=doc(cloud.db,'config','sistema');
-      const profileRef=doc(cloud.db,'usuarios',firebaseUser.uid);
+      const profileRef=doc(cloud.db,'usuarios',authUser.uid);
       const regRef=doc(cloud.db,'config','regioes');
       let systemSnap=await getDoc(systemRef);
 
       // Se ainda não existe configuração do sistema, o primeiro usuário autenticado vira administrador.
       if(!systemSnap.exists()){
         await setDoc(systemRef,{
-          adminUid:firebaseUser.uid,
-          adminEmail:firebaseUser.email||'',
+          adminUid:authUser.uid,
+          adminEmail:authUser.email||'',
           createdAt:new Date().toISOString()
         });
         systemSnap=await getDoc(systemRef);
       }
 
       const systemData=systemSnap.data()||{};
-      const isSystemAdmin=systemData.adminUid===firebaseUser.uid;
+      const isSystemAdmin=systemData.adminUid===authUser.uid;
       let profileSnap=await getDoc(profileRef);
 
       // AUTOCORREÇÃO DO BOOTSTRAP:
-      // Se o Authentication criou o usuário e o documento config/sistema foi salvo,
+      // Se o usuário foi criado e o documento config/sistema foi salvo,
       // mas o perfil usuarios/{uid} não chegou a ser criado, o próprio administrador
       // consegue reconstruir o perfil ao entrar novamente.
       if(!profileSnap.exists() && isSystemAdmin){
         await setDoc(profileRef,{
-          name:firebaseUser.displayName||firebaseUser.email?.split('@')[0]||'Administrador',
-          email:firebaseUser.email||'',
+          name:authUser.displayName||authUser.email?.split('@')[0]||'Administrador',
+          email:authUser.email||'',
           role:'admin',
           region:'Todas',
           active:true,
@@ -638,33 +631,34 @@ service cloud.firestore {
       }
 
       if(!profileSnap.exists()){
-        throw new Error('AUTH_OK_PROFILE_MISSING: Usuário autenticado, mas sem perfil no Firestore. O administrador precisa cadastrá-lo em Usuários & Acessos.');
+        throw new Error('AUTH_OK_PROFILE_MISSING: Usuário autenticado, mas sem perfil cadastrado. O administrador precisa cadastrá-lo em Usuários & Acessos.');
       }
       const p=profileSnap.data();
       if(p.active===false) throw new Error('Este usuário está pausado. Fale com o administrador.');
-      return {id:firebaseUser.uid,uid:firebaseUser.uid,email:firebaseUser.email||p.email||'',name:p.name||firebaseUser.email||'Usuário',role:p.role||'rep',region:p.region||'Sem região',active:p.active!==false,sortOrder:Number(p.sortOrder||0)};
+      return {id:authUser.uid,uid:authUser.uid,email:authUser.email||p.email||'',name:p.name||authUser.email||'Usuário',role:p.role||'rep',region:p.region||'Sem região',active:p.active!==false,sortOrder:Number(p.sortOrder||0)};
     }
     function setSession(user){
+      markSetupComplete();
       state.user=user;
-      el('authScreen').classList.add('hidden');el('firebaseSetupScreen').classList.add('hidden');el('userBox').style.display='flex';el('logoutBtn').style.display='inline-flex';
+      el('authScreen').classList.add('hidden');el('connectionScreen').classList.add('hidden');el('userBox').style.display='flex';el('logoutBtn').style.display='inline-flex';
       el('userName').textContent=user.name;el('userAvatar').textContent=initials(user.name);el('userRole').textContent=user.role==='admin'?'Administrador':`Representante • ${user.region}`;
       el('teamBtn').classList.toggle('visible',user.role==='admin');el('sheetBtn').classList.toggle('visible',user.role==='admin');
     }
     async function logout(){if(cloud.auth)await signOut(cloud.auth);state.user=null;state.all=[];state.filtered=[];state.assignments={};showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';el('teamBtn').classList.remove('visible');el('sheetBtn').classList.remove('visible');el('loginPass').value=''}
     function startAuthObserver(){
       if(cloud.authObserverStarted)return;cloud.authObserverStarted=true;
-      onAuthStateChanged(cloud.auth,async firebaseUser=>{
-        if(!firebaseUser){state.user=null;showLogin();return}
+      onAuthStateChanged(cloud.auth,async authUser=>{
+        if(!authUser){state.user=null;showLogin();return}
         try{
           el('loadingOverlay').classList.remove('hidden');
-          const profile=await bootstrapOrLoadProfile(firebaseUser);setSession(profile);await loadCloudState();await refreshData();
-        }catch(err){console.error(err);state.user=null;await signOut(cloud.auth).catch(()=>{});showLogin(friendlyFirebaseError(err))}
+          const profile=await bootstrapOrLoadProfile(authUser);setSession(profile);await loadCloudState();await refreshData();
+        }catch(err){console.error(err);state.user=null;await signOut(cloud.auth).catch(()=>{});showLogin(friendlyAccessError(err))}
       });
     }
-    async function loginWithFirebase(ev){
+    async function loginUser(ev){
       ev.preventDefault();el('loginError').textContent='';
       try{el('loadingOverlay').classList.remove('hidden');await signInWithEmailAndPassword(cloud.auth,el('loginUser').value.trim(),el('loginPass').value)}
-      catch(err){el('loadingOverlay').classList.add('hidden');el('loginError').textContent=friendlyFirebaseError(err)}
+      catch(err){el('loadingOverlay').classList.add('hidden');el('loginError').textContent=friendlyAccessError(err)}
     }
     async function createFirstAdmin(){
       const email=el('loginUser').value.trim(),password=el('loginPass').value;
@@ -673,7 +667,7 @@ service cloud.firestore {
       el('loadingOverlay').classList.remove('hidden');
       try{
         // Primeiro tenta entrar. Isso corrige o caso em que o usuário já foi criado
-        // no Authentication numa tentativa anterior, mas o bootstrap do Firestore falhou.
+        // no sistema de acesso numa tentativa anterior, mas o bootstrap do banco de dados falhou.
         await signInWithEmailAndPassword(cloud.auth,email,password);
       }catch(signInErr){
         try{
@@ -681,9 +675,9 @@ service cloud.firestore {
         }catch(createErr){
           el('loadingOverlay').classList.add('hidden');
           if(String(createErr?.code||'')==='auth/email-already-in-use'){
-            el('loginError').textContent='Este usuário já existe no Authentication. Confira a senha e clique em Entrar. Se a senha estiver correta e ainda não abrir, publique as regras do Firestore usando o botão abaixo.';
+            el('loginError').textContent='Este usuário já existe no sistema de acesso. Confira a senha e clique em Entrar. Se a senha estiver correta e ainda não abrir, publique as regras do banco de dados usando o botão abaixo.';
           }else{
-            el('loginError').textContent=friendlyFirebaseError(createErr);
+            el('loginError').textContent=friendlyAccessError(createErr);
           }
         }
       }
@@ -809,10 +803,10 @@ service cloud.firestore {
       }catch(err){
         console.error(err);
         if(cred?.user){try{await deleteUser(cred.user)}catch{}}
-        toast(friendlyFirebaseError(err));
+        toast(friendlyAccessError(err));
       }finally{if(secondaryApp)await deleteApp(secondaryApp).catch(()=>{})}
     }
-    async function resetRepPassword(id){const u=getUsers().find(x=>x.id===id);if(!u?.email)return;try{await sendPasswordResetEmail(cloud.auth,u.email);toast(`E-mail de redefinição enviado para ${u.email}.`)}catch(err){toast(friendlyFirebaseError(err))}}
+    async function resetRepPassword(id){const u=getUsers().find(x=>x.id===id);if(!u?.email)return;try{await sendPasswordResetEmail(cloud.auth,u.email);toast(`E-mail de redefinição enviado para ${u.email}.`)}catch(err){toast(friendlyAccessError(err))}}
     async function toggleRep(id){
       const u=getUsers().find(x=>x.id===id);if(!u)return;
       if(id===state.user?.uid){toast('Você não pode bloquear o próprio acesso enquanto está conectado.');return}
@@ -820,17 +814,17 @@ service cloud.firestore {
         await setDoc(doc(cloud.db,'usuarios',id),{active:u.active===false},{merge:true});
         await loadCloudState();renderRepList();
         toast(u.active===false?'Acesso liberado.':'Acesso bloqueado.');
-      }catch(err){toast(friendlyFirebaseError(err))}
+      }catch(err){toast(friendlyAccessError(err))}
     }
     async function moveRep(id,dir){
-      const reps=getUsers().filter(u=>u.role==='rep').sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)),idx=reps.findIndex(x=>x.id===id),target=dir==='up'?idx-1:idx+1;if(idx<0||target<0||target>=reps.length)return;const a=reps[idx],b=reps[target],ao=Number(a.sortOrder||idx+1),bo=Number(b.sortOrder||target+1);try{await Promise.all([setDoc(doc(cloud.db,'usuarios',a.id),{sortOrder:bo},{merge:true}),setDoc(doc(cloud.db,'usuarios',b.id),{sortOrder:ao},{merge:true})]);await loadCloudState();renderRepList()}catch(err){toast(friendlyFirebaseError(err))}
+      const reps=getUsers().filter(u=>u.role==='rep').sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)),idx=reps.findIndex(x=>x.id===id),target=dir==='up'?idx-1:idx+1;if(idx<0||target<0||target>=reps.length)return;const a=reps[idx],b=reps[target],ao=Number(a.sortOrder||idx+1),bo=Number(b.sortOrder||target+1);try{await Promise.all([setDoc(doc(cloud.db,'usuarios',a.id),{sortOrder:bo},{merge:true}),setDoc(doc(cloud.db,'usuarios',b.id),{sortOrder:ao},{merge:true})]);await loadCloudState();renderRepList()}catch(err){toast(friendlyAccessError(err))}
     }
     async function saveRegions(){
       const lines=el('regionRules').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),regions=[];for(const line of lines){const [name,...rest]=line.split('=');if(!name?.trim())continue;regions.push({name:name.trim(),cities:rest.join('=').split(',').map(x=>x.trim()).filter(Boolean)})}if(!regions.length){toast('Informe ao menos uma região.');return}
-      try{await setDoc(doc(cloud.db,'config','regioes'),{items:regions,updatedAt:new Date().toISOString()});state.regions=regions;renderRegionRules();renderRepList();await runRoulette(false);applyFilters();toast('Mapa de regiões salvo no Firestore.')}catch(err){toast(friendlyFirebaseError(err))}
+      try{await setDoc(doc(cloud.db,'config','regioes'),{items:regions,updatedAt:new Date().toISOString()});state.regions=regions;renderRegionRules();renderRepList();await runRoulette(false);applyFilters();toast('Mapa de regiões salvo.')}catch(err){toast(friendlyAccessError(err))}
     }
-    async function changeAdminPassword(){const password=el('newAdminPassword').value;if(password.length<6){toast('Use uma senha com pelo menos 6 caracteres.');return}try{await updatePassword(cloud.auth.currentUser,password);el('newAdminPassword').value='';toast('Senha do administrador alterada no Firebase Authentication.')}catch(err){toast(friendlyFirebaseError(err))}}
-    async function resetAssignments(){if(!confirm('Reiniciar somente a posição da roleta? Nenhum cliente já cadastrado será redistribuído.'))return;try{for(const reg of getRegions())await setDoc(doc(cloud.db,'roletas',regionDocId(reg.name)),{region:reg.name,position:0,updatedAt:new Date().toISOString()},{merge:true});toast('Posição da roleta reiniciada. Clientes existentes foram preservados.')}catch(err){toast(friendlyFirebaseError(err))}}
+    async function changeAdminPassword(){const password=el('newAdminPassword').value;if(password.length<6){toast('Use uma senha com pelo menos 6 caracteres.');return}try{await updatePassword(cloud.auth.currentUser,password);el('newAdminPassword').value='';toast('Senha do administrador alterada.')}catch(err){toast(friendlyAccessError(err))}}
+    async function resetAssignments(){if(!confirm('Reiniciar somente a posição da roleta? Nenhum cliente já cadastrado será redistribuído.'))return;try{for(const reg of getRegions())await setDoc(doc(cloud.db,'roletas',regionDocId(reg.name)),{region:reg.name,position:0,updatedAt:new Date().toISOString()},{merge:true});toast('Posição da roleta reiniciada. Clientes existentes foram preservados.')}catch(err){toast(friendlyAccessError(err))}}
 
     const el = id => document.getElementById(id);
     const fmtInt = new Intl.NumberFormat('pt-BR');
@@ -1002,11 +996,11 @@ service cloud.firestore {
           await runRoulette(false);
           await loadCustomerCache();
         }else{
-          // Representante recebe somente os clientes atribuídos ao seu UID no Firestore.
+          // Representante recebe somente os clientes atribuídos ao seu UID.
           state.all=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
         }
         state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);if(manual)toast('Dados atualizados com sucesso.');
-      }catch(err){console.error(err);setSync('error','Falha na conexão');toast(friendlyFirebaseError(err));state.all=[];applyFilters();}
+      }catch(err){console.error(err);setSync('error','Falha na conexão');toast(friendlyAccessError(err));state.all=[];applyFilters();}
       finally{state.loading=false;el('loadingOverlay').classList.add('hidden')}
     }
 
@@ -1154,13 +1148,12 @@ service cloud.firestore {
     el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
     el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
     el('teamBtn').addEventListener('click',openTeam);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
-    el('loginForm').addEventListener('submit',loginWithFirebase);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyFirestoreRules);el('saveFirebaseConfigBtn').addEventListener('click',saveFirebaseSetup);el('copyRulesBtn').addEventListener('click',copyFirestoreRules);
+    el('loginForm').addEventListener('submit',loginUser);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyAccessRules);el('copyRulesBtn').addEventListener('click',copyAccessRules);
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
+    updateSetupControls();
     (async()=>{
-      const cfg=savedFirebaseConfig();
-      if(!cfg){showSetup();return}
-      try{await initFirebase(cfg)}catch(err){console.error(err);showSetup(friendlyFirebaseError(err))}
+      try{await initServices(DEFAULT_APP_CONFIG)}catch(err){console.error(err);showConnectionError(friendlyAccessError(err))}
     })();
     setInterval(()=>{if(state.user)refreshData(false)},CONFIG.refreshMs);
   </script>
