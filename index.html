@@ -192,7 +192,7 @@
       .app{padding:14px}.topbar{align-items:flex-start}.top-actions{gap:7px}.sync-pill{width:100%;justify-content:center;order:3}.topbar{flex-wrap:wrap}
       .kpi{grid-column:span 12;min-height:128px}.filters{grid-template-columns:1fr}.spend-card,.origin-card,.status-card{grid-column:span 12}
       .donut-wrap{grid-template-columns:1fr}.donut-holder{height:165px}.donut-wrap{height:auto}.modal-body{grid-template-columns:1fr}.detail.full{grid-column:auto}
-      .btn .hide-mobile{display:none}.footer{align-items:flex-start;flex-direction:column}.city-check-grid{grid-template-columns:1fr}
+      .btn .hide-mobile{display:none}.footer{align-items:flex-start;flex-direction:column}.city-check-grid{grid-template-columns:1fr}.city-region-items{grid-template-columns:1fr}
     }
 
 
@@ -236,6 +236,11 @@
     .city-check-item:hover{background:rgba(255,255,255,.065)}
     .city-check-item input{accent-color:#1dbf78}
     .city-check-empty{grid-column:1/-1;color:var(--muted);font-size:12px;padding:8px}
+    .city-region-group{grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+    .city-region-group:first-child{border-top:0;padding-top:0;margin-top:0}
+    .city-region-title{font-size:11px;font-weight:800;color:var(--cyan);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+    .city-region-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+
     @media (max-width:720px){.city-check-grid{grid-template-columns:1fr}}
 
     .admin-only{display:none}.admin-only.visible{display:inline-flex}
@@ -408,10 +413,6 @@
               <div class="admin-field"><label>Senha inicial</label><input id="repPassword" type="password" required placeholder="Mínimo de 6 caracteres" /></div>
               <div class="admin-field"><label>Tipo de acesso</label><select id="repRole"><option value="rep">Representante</option><option value="admin">Administrador</option></select></div>
               <div class="admin-field"><label>Região</label><select id="repRegion" required></select></div>
-              <div class="admin-field full city-check-wrap" id="repCitiesField">
-                <div class="city-check-head"><label>Cidades atendidas</label><button class="city-check-all" id="selectAllCitiesBtn" type="button">Selecionar todas</button></div>
-                <div class="city-check-grid" id="repCities"></div>
-              </div>
             </div>
             <div class="admin-actions"><button class="btn primary" type="submit">Criar usuário e acesso</button></div>
           </form>
@@ -438,8 +439,7 @@
     <div class="modal" style="width:min(620px,100%)">
       <div class="modal-head"><div><h3 id="repCitiesTitle">Cidades do representante</h3><p id="repCitiesSubtitle">Defina em quais cidades este representante participa da roleta.</p></div><button class="close-btn" id="repCitiesClose" aria-label="Fechar">×</button></div>
       <div style="padding:22px">
-        <div class="admin-field" style="margin-bottom:14px"><label>Região</label><select id="editRepRegion"></select></div>
-        <div class="city-check-head"><label>Cidades atendidas</label><button class="city-check-all" id="editSelectAllCitiesBtn" type="button">Selecionar todas</button></div>
+        <div class="city-check-head"><label>Marque as cidades que este representante atende</label><button class="city-check-all" id="editSelectAllCitiesBtn" type="button">Selecionar todas</button></div>
         <div class="city-check-grid" id="editRepCities"></div>
         <div class="admin-actions" style="margin-top:16px"><button class="btn" id="cancelRepCitiesBtn" type="button">Cancelar</button><button class="btn primary" id="saveRepCitiesBtn" type="button">Salvar cidades</button></div>
       </div>
@@ -479,6 +479,35 @@
       messagingSenderId: "860191894747",
       appId: "1:860191894747:web:7963ddad9abb8df9c670fe"
     };
+
+    const DEFAULT_REGIONS = [
+      {
+        name:'Norte Catarinense',
+        cities:[
+          'Araquari','Balneário Barra do Sul','Barra Velha','Campo Alegre','Corupá','Garuva','Guaramirim','Itapoá',
+          'Jaraguá do Sul','Joinville','Massaranduba','Rio Negrinho','São Bento do Sul','São Francisco do Sul',
+          'São João do Itaperiú','Schroeder'
+        ]
+      },
+      {
+        name:'Vale do Itajaí',
+        cities:[
+          'Apiúna','Ascurra','Balneário Camboriú','Balneário Piçarras','Benedito Novo','Blumenau','Bombinhas','Botuverá',
+          'Brusque','Camboriú','Doutor Pedrinho','Gaspar','Guabiruba','Ilhota','Indaial','Itajaí','Itapema','Luiz Alves',
+          'Navegantes','Penha','Pomerode','Porto Belo','Rio dos Cedros','Rodeio','Timbó'
+        ]
+      },
+      {
+        name:'Alto Vale',
+        cities:[
+          'Agrolândia','Agronômica','Atalanta','Aurora','Braço do Trombudo','Chapadão do Lageado','Dona Emma','Ibirama',
+          'Imbuia','Ituporanga','José Boiteux','Laurentino','Lontras','Mirim Doce','Petrolândia','Pouso Redondo',
+          'Presidente Getúlio','Presidente Nereu','Rio do Campo','Rio do Oeste','Rio do Sul','Salete','Santa Terezinha','Taió',
+          'Trombudo Central','Vidal Ramos','Vitor Meireles','Witmarsum'
+        ]
+      }
+    ];
+    const cloneDefaultRegions = () => DEFAULT_REGIONS.map(r=>({name:r.name,cities:[...r.cities]}));
     const state = { all: [], filtered: [], lastSync: null, loading: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set() };
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
@@ -649,12 +678,18 @@ service cloud.${'fire'+'store'} {
         profileSnap=await getDoc(profileRef);
       }
 
-      // Garante também a configuração mínima de regiões caso a primeira inicialização
-      // tenha parado no meio do processo.
+      // Garante o mapa regional padrão. Também migra a configuração antiga
+      // que continha apenas Jaraguá do Sul, sem sobrescrever mapas já personalizados.
       if(isSystemAdmin){
         const regSnap=await getDoc(regRef);
-        if(!regSnap.exists()){
-          await setDoc(regRef,{items:[{name:'Jaraguá',cities:['Jaraguá do Sul']}],createdAt:new Date().toISOString()});
+        const items=regSnap.exists()?(regSnap.data().items||[]):[];
+        const legacyJaragua=items.length===1
+          && normalize(items[0]?.name)==='jaragua'
+          && Array.isArray(items[0]?.cities)
+          && items[0].cities.length===1
+          && normalize(items[0].cities[0])==='jaragua do sul';
+        if(!regSnap.exists() || !items.length || legacyJaragua){
+          await setDoc(regRef,{items:cloneDefaultRegions(),updatedAt:new Date().toISOString()},{merge:true});
         }
       }
 
@@ -714,7 +749,7 @@ service cloud.${'fire'+'store'} {
     async function loadCloudState(){
       if(!state.user)return;
       const regSnap=await getDoc(doc(cloud.db,'config','regioes'));
-      state.regions=regSnap.exists()?(regSnap.data().items||[]):[{name:'Jaraguá',cities:['Jaraguá do Sul']}];
+      state.regions=regSnap.exists()&&Array.isArray(regSnap.data().items)&&regSnap.data().items.length?(regSnap.data().items||[]):cloneDefaultRegions();
       if(state.user.role==='admin'){
         const usersSnap=await getDocs(collection(cloud.db,'usuarios'));
         state.users=usersSnap.docs.map(d=>({id:d.id,uid:d.id,...d.data()})).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
@@ -738,10 +773,9 @@ service cloud.${'fire'+'store'} {
       const city=String(leadCity(row)||'').trim();
       const cityKey=normalize(city);
       const reps=getUsers().filter(u=>{
-        if(u.role!=='rep'||u.active===false||normalize(u.region)!==normalize(region)) return false;
+        if(u.role!=='rep'||u.active===false) return false;
         const cities=Array.isArray(u.cities)?u.cities.filter(Boolean):[];
-        // Compatibilidade: representantes antigos sem lista de cidades atendem toda a região.
-        return !cities.length || cities.some(c=>normalize(c)===cityKey);
+        return cities.some(c=>normalize(c)===cityKey);
       }).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
       if(!reps.length)return {status:'waiting'};
       const customerRef=doc(cloud.db,'clientes',phone);
@@ -786,24 +820,6 @@ service cloud.${'fire'+'store'} {
       el('regionRules').value=getRegions().map(r=>`${r.name} = ${(r.cities||[]).join(', ')}`).join('\n');
       el('repRegion').innerHTML=getRegions().map(r=>`<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}</option>`).join('')||'<option value="">Cadastre uma região</option>';
       if(previous && [...el('repRegion').options].some(o=>o.value===previous)) el('repRegion').value=previous;
-      renderRepCities();
-    }
-    function selectedRepCities(){
-      return [...(el('repCities')?.querySelectorAll('input[type="checkbox"]:checked')||[])].map(x=>x.value);
-    }
-    function renderRepCities(selected=[]){
-      const holder=el('repCities');if(!holder)return;
-      const region=getRegions().find(r=>normalize(r.name)===normalize(el('repRegion')?.value));
-      const cities=region?.cities||[];
-      const selectedSet=new Set((selected||[]).map(normalize));
-      holder.innerHTML=cities.length?cities.map(city=>`<label class="city-check-item"><input type="checkbox" value="${escapeHtml(city)}" ${selectedSet.has(normalize(city))?'checked':''}><span>${escapeHtml(city)}</span></label>`).join(''):'<div class="city-check-empty">Cadastre cidades no mapa de regiões.</div>';
-    }
-    function toggleAllRepCities(){
-      const boxes=[...(el('repCities')?.querySelectorAll('input[type="checkbox"]')||[])];
-      if(!boxes.length)return;
-      const shouldCheck=boxes.some(b=>!b.checked);
-      boxes.forEach(b=>b.checked=shouldCheck);
-      el('selectAllCitiesBtn').textContent=shouldCheck?'Desmarcar todas':'Selecionar todas';
     }
     function updateRoleRegionState(){
       const isAdmin=el('repRole')?.value==='admin';
@@ -811,8 +827,6 @@ service cloud.${'fire'+'store'} {
       el('repRegion').disabled=isAdmin;
       el('repRegion').required=!isAdmin;
       el('repRegion').title=isAdmin?'Administradores têm acesso a todas as regiões.':'';
-      if(el('repCitiesField')) el('repCitiesField').style.display=isAdmin?'none':'block';
-      if(!isAdmin) renderRepCities();
     }
     function renderRepList(){
       const users=getUsers().sort((a,b)=>{
@@ -823,7 +837,7 @@ service cloud.${'fire'+'store'} {
         const isRep=u.role==='rep';
         const isSelf=u.id===state.user?.uid;
         const roleLabel=isRep?'Representante':'Administrador';
-        const cityText=isRep?(Array.isArray(u.cities)&&u.cities.length?u.cities.join(', '):`Toda a região ${u.region||'Sem região'}`):'';
+        const cityText=isRep?(Array.isArray(u.cities)&&u.cities.length?u.cities.join(', '):'Nenhuma cidade definida'):'';
         const regionLabel=isRep?` • ${escapeHtml(cityText)}`:'';
         const moveBtns=isRep?`<button data-move="up" data-id="${u.id}" title="Subir na ordem da roleta">↑</button><button data-move="down" data-id="${u.id}" title="Descer na ordem da roleta">↓</button>`:'';
         const citiesBtn=isRep?`<button data-cities="${u.id}" title="Editar cidades atendidas">Cidades</button>`:'';
@@ -839,23 +853,32 @@ service cloud.${'fire'+'store'} {
     function openRepCitiesEditor(id){
       const u=getUsers().find(x=>x.id===id&&x.role==='rep');if(!u)return;
       state.editingRepId=id;
-      const region=getRegions().find(r=>normalize(r.name)===normalize(u.region))||getRegions()[0];
-      el('editRepRegion').innerHTML=getRegions().map(r=>`<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}</option>`).join('');
-      if(region) el('editRepRegion').value=region.name;
-      const allRegionCities=region?.cities||[];
-      state.editingCities=new Set((Array.isArray(u.cities)&&u.cities.length?u.cities:allRegionCities).map(String));
+      state.editingCities=new Set((Array.isArray(u.cities)?u.cities:[]).map(String));
       el('repCitiesTitle').textContent=`Cidades — ${u.name}`;
+      el('repCitiesSubtitle').textContent='Marque todas as cidades que este representante atende. As cidades estão separadas por região.';
       renderEditRepCities();
       el('repCitiesBackdrop').classList.add('open');
     }
     function closeRepCitiesEditor(){el('repCitiesBackdrop').classList.remove('open');state.editingRepId=null;state.editingCities=new Set()}
     function renderEditRepCities(){
-      const region=getRegions().find(r=>normalize(r.name)===normalize(el('editRepRegion')?.value));
-      const cities=region?.cities||[];
-      el('editRepCities').innerHTML=cities.length?cities.map(city=>`<label class="city-check-item"><input type="checkbox" value="${escapeHtml(city)}" ${[...state.editingCities].some(c=>normalize(c)===normalize(city))?'checked':''}><span>${escapeHtml(city)}</span></label>`).join(''):'<div class="city-check-empty">Esta região não possui cidades cadastradas.</div>';
+      const groups=cloneDefaultRegions();
+      const selected=new Set([...state.editingCities].map(normalize));
+      el('editRepCities').innerHTML=groups.map(group=>`
+        <div class="city-region-group">
+          <div class="city-region-title">${escapeHtml(group.name)}</div>
+          <div class="city-region-items">
+            ${(group.cities||[]).map(city=>`<label class="city-check-item"><input type="checkbox" value="${escapeHtml(city)}" ${selected.has(normalize(city))?'checked':''}><span>${escapeHtml(city)}</span></label>`).join('')}
+          </div>
+        </div>
+      `).join('');
       el('editRepCities').querySelectorAll('input[type="checkbox"]').forEach(box=>box.addEventListener('change',()=>{
-        if(box.checked) state.editingCities.add(box.value); else [...state.editingCities].filter(c=>normalize(c)===normalize(box.value)).forEach(c=>state.editingCities.delete(c));
+        if(box.checked) state.editingCities.add(box.value);
+        else [...state.editingCities].filter(c=>normalize(c)===normalize(box.value)).forEach(c=>state.editingCities.delete(c));
+        const boxes=[...el('editRepCities').querySelectorAll('input[type="checkbox"]')];
+        el('editSelectAllCitiesBtn').textContent=boxes.length && boxes.every(b=>b.checked)?'Desmarcar todas':'Selecionar todas';
       }));
+      const boxes=[...el('editRepCities').querySelectorAll('input[type="checkbox"]')];
+      if(el('editSelectAllCitiesBtn')) el('editSelectAllCitiesBtn').textContent=boxes.length && boxes.every(b=>b.checked)?'Desmarcar todas':'Selecionar todas';
     }
     function toggleAllEditCities(){
       const boxes=[...el('editRepCities').querySelectorAll('input[type="checkbox"]')];if(!boxes.length)return;
@@ -864,11 +887,12 @@ service cloud.${'fire'+'store'} {
     }
     async function saveRepCities(){
       const id=state.editingRepId,u=getUsers().find(x=>x.id===id);if(!u)return;
-      const region=el('editRepRegion').value;
-      const validCities=(getRegions().find(r=>normalize(r.name)===normalize(region))?.cities||[]).filter(city=>[...state.editingCities].some(c=>normalize(c)===normalize(city)));
-      if(!region||!validCities.length){toast('Selecione uma região e pelo menos uma cidade.');return}
+      const allCities=cloneDefaultRegions().flatMap(r=>r.cities||[]);
+      const selected=new Set([...state.editingCities].map(normalize));
+      const validCities=allCities.filter(city=>selected.has(normalize(city)));
+      if(!validCities.length){toast('Marque pelo menos uma cidade para este representante.');return}
       try{
-        await setDoc(doc(cloud.db,'usuarios',id),{region,cities:validCities},{merge:true});
+        await setDoc(doc(cloud.db,'usuarios',id),{cities:validCities},{merge:true});
         await loadCloudState();renderRepList();await runRoulette(false);applyFilters();closeRepCitiesEditor();toast('Cidades do representante atualizadas.');
       }catch(err){toast(friendlyAccessError(err))}
     }
@@ -881,8 +905,8 @@ service cloud.${'fire'+'store'} {
       ev.preventDefault();
       const name=el('repName').value.trim(),email=el('repLogin').value.trim().toLowerCase(),password=el('repPassword').value,role=el('repRole').value,selectedRegion=el('repRegion').value;
       const region=role==='admin'?'Todas':selectedRegion;
-      const cities=role==='admin'?[]:selectedRepCities();
-      if(!name||!email||password.length<6||(role==='rep'&&(!region||!cities.length))){toast('Preencha nome, e-mail, tipo de acesso e uma senha de pelo menos 6 caracteres. Para representante, selecione a região e pelo menos uma cidade.');return}
+      const cities=[];
+      if(!name||!email||password.length<6||(role==='rep'&&!region)){toast('Preencha nome, e-mail, tipo de acesso e uma senha de pelo menos 6 caracteres. Para representante, selecione a região.');return}
       let secondaryApp,secondaryAuth,cred;
       try{
         secondaryApp=initializeApp(cloud.config,'provision_'+Date.now());
@@ -895,7 +919,6 @@ service cloud.${'fire'+'store'} {
         ev.target.reset();
         el('repRole').value='rep';
         updateRoleRegionState();
-        renderRepCities();
         await loadCloudState();renderRegionRules();renderRepList();
         if(role==='rep') await runRoulette(false);
         applyFilters();
@@ -1247,7 +1270,7 @@ service cloud.${'fire'+'store'} {
     el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);
     el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
     el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
-    el('teamBtn').addEventListener('click',openTeam);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repRegion').addEventListener('change',()=>renderRepCities());el('selectAllCitiesBtn').addEventListener('click',toggleAllRepCities);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);el('editRepRegion').addEventListener('change',()=>{const r=getRegions().find(x=>normalize(x.name)===normalize(el('editRepRegion').value));state.editingCities=new Set((r?.cities||[]).map(String));renderEditRepCities()});updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
+    el('teamBtn').addEventListener('click',openTeam);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
     el('loginForm').addEventListener('submit',loginUser);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyAccessRules);el('copyRulesBtn').addEventListener('click',copyAccessRules);
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam();closeRepCitiesEditor()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
