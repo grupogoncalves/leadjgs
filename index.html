@@ -194,11 +194,82 @@
       .donut-wrap{grid-template-columns:1fr}.donut-holder{height:165px}.donut-wrap{height:auto}.modal-body{grid-template-columns:1fr}.detail.full{grid-column:auto}
       .btn .hide-mobile{display:none}.footer{align-items:flex-start;flex-direction:column}
     }
+
+
+    /* ===== Login, usuários e roleta de leads ===== */
+    .auth-screen{position:fixed;inset:0;z-index:500;background:
+      radial-gradient(circle at 12% 0%,rgba(77,215,238,.13),transparent 30%),
+      radial-gradient(circle at 90% 12%,rgba(78,226,154,.14),transparent 28%),
+      linear-gradient(145deg,#04101a,#071a2b 55%,#06131f);display:grid;place-items:center;padding:22px}
+    .auth-screen.hidden{display:none}
+    .auth-card{width:min(430px,100%);border:1px solid var(--line);border-radius:28px;background:rgba(11,33,51,.94);box-shadow:0 28px 80px rgba(0,0,0,.42);padding:30px}
+    .auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+    .auth-brand .logo{width:52px;height:52px}
+    .auth-brand h2{margin:0;font-size:24px;letter-spacing:-.035em}.auth-brand p{margin:5px 0 0;color:var(--muted);font-size:12px}
+    .auth-form{display:grid;gap:12px}.auth-field label,.admin-field label{display:block;color:var(--muted);font-size:11px;font-weight:700;margin:0 0 7px;text-transform:uppercase;letter-spacing:.06em}
+    .auth-field input,.auth-field textarea,.admin-field input,.admin-field select,.admin-field textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#081d2e;color:var(--text);outline:none;padding:12px 13px;min-height:44px}
+    .auth-field textarea{min-height:170px;resize:vertical;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px}
+    .admin-field textarea{min-height:140px;resize:vertical;line-height:1.5}
+    .auth-field input:focus,.auth-field textarea:focus,.admin-field input:focus,.admin-field select:focus,.admin-field textarea:focus{border-color:rgba(77,215,238,.48);box-shadow:0 0 0 4px rgba(77,215,238,.07)}
+    .auth-error{min-height:18px;color:var(--red);font-size:12px}.auth-hint{margin-top:16px;padding:12px;border-radius:12px;background:rgba(255,255,255,.035);color:var(--muted);font-size:11px;line-height:1.5}
+    .user-box{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035)}
+    .user-avatar{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(77,215,238,.2),rgba(78,226,154,.18));font-weight:800;font-size:11px}
+    .user-meta{line-height:1.15}.user-meta strong{display:block;font-size:11px}.user-meta span{display:block;margin-top:3px;color:var(--muted);font-size:9px}
+    .admin-modal{width:min(1020px,100%)}
+    .admin-layout{padding:20px 22px 22px;display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .admin-panel{border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.025);padding:16px;min-width:0}
+    .admin-panel h4{margin:0 0 5px;font-size:14px}.admin-panel>p{margin:0 0 15px;color:var(--muted);font-size:11px;line-height:1.45}
+    .admin-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.admin-field.full{grid-column:1/-1}.admin-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .rep-list{display:grid;gap:9px;max-height:470px;overflow:auto;padding-right:3px}.rep-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid rgba(153,184,207,.11);border-radius:13px;background:rgba(255,255,255,.025)}
+    .rep-main strong{display:block;font-size:12px}.rep-main span{display:block;color:var(--muted);font-size:10px;margin-top:4px}.rep-actions{display:flex;gap:5px}.rep-actions button{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--muted)}
+    .rep-actions button:hover{color:var(--text);background:rgba(255,255,255,.075)}
+    .roulette-info{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.roulette-stat{padding:11px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.035)}.roulette-stat strong{display:block;font-size:18px}.roulette-stat span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .assign-badge{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;font-size:10px;background:rgba(77,215,238,.08);color:var(--cyan);border:1px solid rgba(77,215,238,.10);white-space:nowrap}
+    .assign-badge.unassigned{color:var(--amber);background:rgba(255,189,89,.08)}
+    .region-badge{display:inline-flex;padding:5px 7px;border-radius:8px;background:rgba(167,137,255,.08);color:#beaaff;font-size:10px;white-space:nowrap}
+    .admin-only{display:none}.admin-only.visible{display:inline-flex}
+    .setup-card{width:min(620px,100%)}.setup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.setup-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:10px}.setup-note code{color:var(--cyan)}
+    @media(max-width:850px){.admin-layout{grid-template-columns:1fr}.admin-form-grid{grid-template-columns:1fr}.admin-field.full{grid-column:auto}.roulette-info{grid-template-columns:1fr 1fr 1fr}}
+
   </style>
 </head>
 <body>
+
+  <section class="auth-screen" id="firebaseSetupScreen" aria-label="Configuração do Firebase">
+    <div class="auth-card setup-card">
+      <div class="auth-brand">
+        <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.8 13.1a1 1 0 0 0 .8 1.6h5.2L10 22l8.2-11.1a1 1 0 0 0-.8-1.6h-5.2L13 2Z" fill="currentColor"/></svg></div>
+        <div><h2>Conectar ao Firebase</h2><p>Cole a configuração do aplicativo Web do seu projeto Firebase.</p></div>
+      </div>
+      <div class="auth-form">
+        <div class="auth-field"><label>firebaseConfig</label><textarea id="firebaseConfigInput" spellcheck="false" placeholder="const firebaseConfig = {&#10;  apiKey: &quot;...&quot;,&#10;  authDomain: &quot;...&quot;,&#10;  projectId: &quot;...&quot;,&#10;  storageBucket: &quot;...&quot;,&#10;  messagingSenderId: &quot;...&quot;,&#10;  appId: &quot;...&quot;&#10;};"></textarea></div>
+        <div class="auth-error" id="firebaseSetupError"></div>
+        <div class="setup-actions"><button class="btn primary" id="saveFirebaseConfigBtn" type="button">Salvar e conectar</button><button class="btn" id="copyRulesBtn" type="button">Copiar regras do Firestore</button></div>
+      </div>
+      <div class="auth-hint">Ative <strong>Authentication → E-mail/Senha</strong> e crie o <strong>Cloud Firestore</strong>. Na primeira autenticação, o primeiro usuário que entrar será registrado como administrador. Se o usuário já existir no Authentication, basta usar o mesmo e-mail e senha para concluir a inicialização.</div>
+      <div class="setup-note">Este arquivo já está configurado para o projeto <code>leads-107a4</code>. Esta tela só aparece se houver falha ao inicializar o Firebase.</div>
+    </div>
+  </section>
+
+  <section class="auth-screen hidden" id="authScreen" aria-label="Acesso ao painel">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.8 13.1a1 1 0 0 0 .8 1.6h5.2L10 22l8.2-11.1a1 1 0 0 0-.8-1.6h-5.2L13 2Z" fill="currentColor"/></svg></div>
+        <div><h2>Acesso comercial</h2><p>Entre para visualizar e receber seus leads.</p></div>
+      </div>
+      <form class="auth-form" id="loginForm">
+        <div class="auth-field"><label>E-mail</label><input id="loginUser" type="email" autocomplete="username" required placeholder="seuemail@empresa.com.br" /></div>
+        <div class="auth-field"><label>Senha</label><input id="loginPass" type="password" autocomplete="current-password" required placeholder="Sua senha" /></div>
+        <div class="auth-error" id="loginError"></div>
+        <button class="btn primary" type="submit">Entrar no painel</button>
+        <button class="btn" id="createFirstAdminBtn" type="button">Criar primeiro administrador</button>
+        <button class="btn" id="copyRulesLoginBtn" type="button">Copiar regras do Firestore</button>
+      </form>
+      <div class="auth-hint">Projeto Firebase: <strong>leads-107a4</strong>. Use um usuário do Firebase Authentication. Se o usuário já foi criado no Authentication, clique em Entrar. O sistema agora recupera automaticamente uma inicialização incompleta do primeiro administrador.</div>
+    </div>
+  </section>
   <div class="loading-overlay" id="loadingOverlay">
-    <div class="loader-card"><div class="spinner"></div><div>Conectando à planilha…</div></div>
+    <div class="loader-card"><div class="spinner"></div><div>Conectando ao Firebase e aos leads…</div></div>
   </div>
 
   <main class="app">
@@ -214,11 +285,14 @@
       </div>
       <div class="top-actions">
         <div class="sync-pill"><span class="sync-dot" id="syncDot"></span><span id="syncText">Conectando…</span></div>
+        <div class="user-box" id="userBox" style="display:none"><span class="user-avatar" id="userAvatar">A</span><span class="user-meta"><strong id="userName">Usuário</strong><span id="userRole">Perfil</span></span></div>
+        <button class="btn admin-only" id="teamBtn" title="Gerenciar usuários, acessos, representantes e regiões">Usuários &amp; Acessos</button>
+        <button class="btn" id="logoutBtn" title="Sair" style="display:none">Sair</button>
         <button class="btn" id="exportBtn" title="Exportar dados filtrados">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
           <span class="hide-mobile">Exportar CSV</span>
         </button>
-        <a class="btn" href="https://docs.google.com/spreadsheets/d/14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM/edit?gid=0" target="_blank" rel="noopener">
+        <a class="btn admin-only" id="sheetBtn" href="https://docs.google.com/spreadsheets/d/14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM/edit?gid=0" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
           <span class="hide-mobile">Abrir planilha</span>
         </a>
@@ -299,15 +373,51 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Lead</th><th>Telefone</th><th>Cidade</th><th>Gasto mensal</th><th>Prioridade</th><th>Origem</th><th>Status</th><th>Campanha</th><th>Entrada</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Lead</th><th>Telefone</th><th>Cidade</th><th>Região</th><th>Representante</th><th>Gasto mensal</th><th>Prioridade</th><th>Origem</th><th>Status</th><th>Campanha</th><th>Entrada</th><th>Ações</th></tr></thead>
             <tbody id="leadTableBody"></tbody>
           </table>
         </div>
       </article>
     </section>
 
-    <footer class="footer"><span>Fonte: Google Planilhas • Atualização automática a cada 60 segundos</span><span id="footerInfo">Aguardando sincronização</span></footer>
+    <footer class="footer"><span>Fonte: Google Planilhas + Firebase • Atualização automática a cada 60 segundos</span><span id="footerInfo">Aguardando sincronização</span></footer>
   </main>
+
+
+  <div class="modal-backdrop" id="teamBackdrop" role="dialog" aria-modal="true" aria-labelledby="teamTitle">
+    <div class="modal admin-modal">
+      <div class="modal-head"><div><h3 id="teamTitle">Usuários &amp; Acessos</h3><p>Crie logins, defina o nível de acesso e gerencie a equipe e a roleta.</p></div><button class="close-btn" id="teamClose" aria-label="Fechar">×</button></div>
+      <div class="admin-layout">
+        <section class="admin-panel">
+          <h4>Novo usuário</h4><p>O usuário será criado no Firebase Authentication e receberá as permissões definidas aqui no painel.</p>
+          <form id="repForm">
+            <div class="admin-form-grid">
+              <div class="admin-field full"><label>Nome</label><input id="repName" required placeholder="Ex.: João Silva" /></div>
+              <div class="admin-field"><label>E-mail</label><input id="repLogin" type="email" required placeholder="joao@empresa.com.br" /></div>
+              <div class="admin-field"><label>Senha inicial</label><input id="repPassword" type="password" required placeholder="Mínimo de 6 caracteres" /></div>
+              <div class="admin-field"><label>Tipo de acesso</label><select id="repRole"><option value="rep">Representante</option><option value="admin">Administrador</option></select></div>
+              <div class="admin-field"><label>Região</label><select id="repRegion" required></select></div>
+            </div>
+            <div class="admin-actions"><button class="btn primary" type="submit">Criar usuário e acesso</button></div>
+          </form>
+          <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+          <h4>Mapa de regiões</h4><p>Uma linha por região. Exemplo: <strong>Jaraguá = Jaraguá do Sul, Guaramirim, Schroeder</strong>.</p>
+          <div class="admin-field"><textarea id="regionRules" spellcheck="false"></textarea></div>
+          <div class="admin-actions"><button class="btn" id="saveRegionsBtn" type="button">Salvar regiões</button></div>
+          <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+          <h4>Senha do administrador</h4><p>Altera a senha do usuário administrador atualmente autenticado no Firebase.</p>
+          <div class="admin-field"><input id="newAdminPassword" type="password" placeholder="Nova senha do administrador" /></div>
+          <div class="admin-actions"><button class="btn" id="changeAdminPasswordBtn" type="button">Alterar senha</button></div>
+        </section>
+        <section class="admin-panel">
+          <div class="roulette-info"><div class="roulette-stat"><strong id="statReps">0</strong><span>Representantes</span></div><div class="roulette-stat"><strong id="statAssigned">0</strong><span>Distribuídos</span></div><div class="roulette-stat"><strong id="statWaiting">0</strong><span>Aguardando região</span></div></div>
+          <h4>Usuários cadastrados</h4><p>Administradores têm acesso total. Representantes visualizam somente os clientes atribuídos a eles. A ordem dos representantes define a roleta.</p>
+          <div class="rep-list" id="repList"></div>
+          <div class="admin-actions"><button class="btn primary" id="runRouletteBtn" type="button">Rodar roleta agora</button><button class="btn" id="resetAssignmentsBtn" type="button">Reiniciar posição</button></div>
+        </section>
+      </div>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
@@ -318,14 +428,410 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script>
+  <script type="module">
+    import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js';
+    import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updatePassword, deleteUser } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc, getDocs, collection, query, where, runTransaction, deleteDoc } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
     const CONFIG = {
       sheetId: '14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM',
       gid: '0',
       refreshMs: 60000
     };
 
-    const state = { all: [], filtered: [], lastSync: null, loading: false };
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB76j7TJmvxXGJZKt5H7bX85WK-JEP7J9M",
+      authDomain: "leads-107a4.firebaseapp.com",
+      databaseURL: "https://leads-107a4-default-rtdb.firebaseio.com",
+      projectId: "leads-107a4",
+      storageBucket: "leads-107a4.firebasestorage.app",
+      messagingSenderId: "860191894747",
+      appId: "1:860191894747:web:7963ddad9abb8df9c670fe"
+    };
+    const FIREBASE_CONFIG_KEY = 'leadFirebaseConfigV2';
+    const state = { all: [], filtered: [], lastSync: null, loading: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [] };
+    const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
+
+    const FIRESTORE_RULES = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function systemPath() { return /databases/$(database)/documents/config/sistema; }
+    function userPath(uid) { return /databases/$(database)/documents/usuarios/$(uid); }
+    function hasSystem() { return exists(systemPath()); }
+    function isBootstrapAdmin() {
+      return signedIn() && hasSystem() && get(systemPath()).data.adminUid == request.auth.uid;
+    }
+    function isProfileAdmin() {
+      return signedIn()
+        && exists(userPath(request.auth.uid))
+        && get(userPath(request.auth.uid)).data.role == 'admin'
+        && get(userPath(request.auth.uid)).data.active != false;
+    }
+    function isAdmin() { return isBootstrapAdmin() || isProfileAdmin(); }
+
+    match /config/sistema {
+      allow read: if signedIn();
+      allow create: if signedIn() && !hasSystem() && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+    match /config/regioes {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /usuarios/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+    match /clientes/{phone} {
+      allow read: if isAdmin() || (signedIn() && resource.data.repUid == request.auth.uid);
+      allow create, update, delete: if isAdmin();
+    }
+    match /roletas/{region} {
+      allow read, write: if isAdmin();
+    }
+  }
+}`
+
+    function parseFirebaseConfig(raw){
+      if(!raw) return null;
+      if(typeof raw === 'object') return raw;
+      let s=String(raw).trim();
+      try{return JSON.parse(s)}catch{}
+      const obj={};
+      for(const key of ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId','measurementId']){
+        const m=s.match(new RegExp(key+'\\s*:\\s*[\\"\\\']([^\\"\\\']+)[\\"\\\']','i'));
+        if(m) obj[key]=m[1];
+      }
+      return obj.apiKey&&obj.authDomain&&obj.projectId&&obj.appId?obj:null;
+    }
+    function savedFirebaseConfig(){
+      if(DEFAULT_FIREBASE_CONFIG?.apiKey) return DEFAULT_FIREBASE_CONFIG;
+      try{return parseFirebaseConfig(localStorage.getItem(FIREBASE_CONFIG_KEY))}catch{return null}
+    }
+    function friendlyFirebaseError(err){
+      const code=String(err?.code||'');
+      const map={
+        'auth/invalid-credential':'E-mail ou senha inválidos.',
+        'auth/user-not-found':'Usuário não encontrado.',
+        'auth/wrong-password':'Senha inválida.',
+        'auth/email-already-in-use':'Este e-mail já existe no Authentication.',
+        'auth/weak-password':'A senha precisa ter pelo menos 6 caracteres.',
+        'auth/invalid-email':'Informe um e-mail válido.',
+        'auth/too-many-requests':'Muitas tentativas. Aguarde e tente novamente.',
+        'auth/requires-recent-login':'Entre novamente no sistema antes de alterar a senha.',
+        'permission-denied':'Permissão negada pelo Firestore. Confira as regras de segurança.',
+        'firestore/permission-denied':'Authentication funcionou, mas o Firestore bloqueou o acesso. Clique em “Copiar regras do Firestore”, publique-as no Firebase Console e entre novamente.'
+      };
+      const msg=String(err?.message||'');
+      if(msg.includes('AUTH_OK_PROFILE_MISSING')) return msg.replace('AUTH_OK_PROFILE_MISSING: ','');
+      if(msg.toLowerCase().includes('missing or insufficient permissions')) return 'Authentication funcionou, mas o Firestore bloqueou o acesso. Publique as regras do Firestore e entre novamente.';
+      return map[code] || msg || 'Não foi possível concluir a operação.';
+    }
+    async function initFirebase(config){
+      if(cloud.ready) return true;
+      cloud.config=config;
+      cloud.app=initializeApp(config);
+      cloud.auth=getAuth(cloud.app);
+      cloud.db=getFirestore(cloud.app);
+      await setPersistence(cloud.auth,browserLocalPersistence);
+      cloud.ready=true;
+      startAuthObserver();
+      return true;
+    }
+    function showSetup(message=''){
+      el('firebaseSetupScreen').classList.remove('hidden');el('authScreen').classList.add('hidden');el('loadingOverlay').classList.add('hidden');
+      el('firebaseSetupError').textContent=message;
+    }
+    function showLogin(message=''){
+      el('firebaseSetupScreen').classList.add('hidden');el('authScreen').classList.remove('hidden');el('loadingOverlay').classList.add('hidden');
+      el('loginError').textContent=message;
+    }
+    async function saveFirebaseSetup(){
+      const error=el('firebaseSetupError');error.textContent='';
+      const cfg=parseFirebaseConfig(el('firebaseConfigInput').value);
+      if(!cfg){error.textContent='Não consegui identificar apiKey, authDomain, projectId e appId no firebaseConfig.';return;}
+      try{
+        localStorage.setItem(FIREBASE_CONFIG_KEY,JSON.stringify(cfg));
+        location.reload();
+      }catch(err){error.textContent=friendlyFirebaseError(err)}
+    }
+    async function copyFirestoreRules(){
+      try{await navigator.clipboard.writeText(FIRESTORE_RULES);toast('Regras do Firestore copiadas. Cole em Firestore → Regras e publique.');}
+      catch{prompt('Copie as regras do Firestore:',FIRESTORE_RULES)}
+    }
+
+    function getUsers(){return state.users||[]}
+    function getRegions(){return state.regions||[]}
+    function getAssignments(){return state.assignments||{}}
+    function identityPhone(value){
+      let p=cleanPhone(value);
+      if(p.startsWith('55') && (p.length===12 || p.length===13)) p=p.slice(2);
+      return p;
+    }
+    function customerKey(row){
+      // REGRA ÚNICA: somente o telefone identifica o cliente e impede nova distribuição.
+      const phone=identityPhone(leadPhone(row));
+      return phone.length>=10 ? phone : '';
+    }
+    function leadKey(row){return customerKey(row)}
+    function uniqueCustomerRows(rows){
+      const ordered=[...rows].sort((a,b)=>(parseDate(leadDate(a))?.getTime()||0)-(parseDate(leadDate(b))?.getTime()||0));
+      const seen=new Set(),unique=[];
+      for(const row of ordered){const key=customerKey(row);if(!key||seen.has(key))continue;seen.add(key);unique.push(row)}
+      return unique;
+    }
+    function regionOf(row){
+      const direct=String(field(row,'region','regiao','região')||'').trim();if(direct)return direct;
+      const city=normalize(leadCity(row));
+      for(const reg of getRegions()){if((reg.cities||[]).some(c=>normalize(c)===city))return reg.name}
+      if(getRegions().length===1)return getRegions()[0].name;
+      return 'Sem região';
+    }
+    function assignmentOf(row){const key=leadKey(row);return key?getAssignments()[key]||null:null}
+    function regionDocId(region){return compactKey(region)||'semregiao'}
+    function initials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2)}
+
+    async function bootstrapOrLoadProfile(firebaseUser){
+      const systemRef=doc(cloud.db,'config','sistema');
+      const profileRef=doc(cloud.db,'usuarios',firebaseUser.uid);
+      const regRef=doc(cloud.db,'config','regioes');
+      let systemSnap=await getDoc(systemRef);
+
+      // Se ainda não existe configuração do sistema, o primeiro usuário autenticado vira administrador.
+      if(!systemSnap.exists()){
+        await setDoc(systemRef,{
+          adminUid:firebaseUser.uid,
+          adminEmail:firebaseUser.email||'',
+          createdAt:new Date().toISOString()
+        });
+        systemSnap=await getDoc(systemRef);
+      }
+
+      const systemData=systemSnap.data()||{};
+      const isSystemAdmin=systemData.adminUid===firebaseUser.uid;
+      let profileSnap=await getDoc(profileRef);
+
+      // AUTOCORREÇÃO DO BOOTSTRAP:
+      // Se o Authentication criou o usuário e o documento config/sistema foi salvo,
+      // mas o perfil usuarios/{uid} não chegou a ser criado, o próprio administrador
+      // consegue reconstruir o perfil ao entrar novamente.
+      if(!profileSnap.exists() && isSystemAdmin){
+        await setDoc(profileRef,{
+          name:firebaseUser.displayName||firebaseUser.email?.split('@')[0]||'Administrador',
+          email:firebaseUser.email||'',
+          role:'admin',
+          region:'Todas',
+          active:true,
+          sortOrder:0,
+          createdAt:new Date().toISOString()
+        },{merge:true});
+        profileSnap=await getDoc(profileRef);
+      }
+
+      // Garante também a configuração mínima de regiões caso a primeira inicialização
+      // tenha parado no meio do processo.
+      if(isSystemAdmin){
+        const regSnap=await getDoc(regRef);
+        if(!regSnap.exists()){
+          await setDoc(regRef,{items:[{name:'Jaraguá',cities:['Jaraguá do Sul']}],createdAt:new Date().toISOString()});
+        }
+      }
+
+      if(!profileSnap.exists()){
+        throw new Error('AUTH_OK_PROFILE_MISSING: Usuário autenticado, mas sem perfil no Firestore. O administrador precisa cadastrá-lo em Usuários & Acessos.');
+      }
+      const p=profileSnap.data();
+      if(p.active===false) throw new Error('Este usuário está pausado. Fale com o administrador.');
+      return {id:firebaseUser.uid,uid:firebaseUser.uid,email:firebaseUser.email||p.email||'',name:p.name||firebaseUser.email||'Usuário',role:p.role||'rep',region:p.region||'Sem região',active:p.active!==false,sortOrder:Number(p.sortOrder||0)};
+    }
+    function setSession(user){
+      state.user=user;
+      el('authScreen').classList.add('hidden');el('firebaseSetupScreen').classList.add('hidden');el('userBox').style.display='flex';el('logoutBtn').style.display='inline-flex';
+      el('userName').textContent=user.name;el('userAvatar').textContent=initials(user.name);el('userRole').textContent=user.role==='admin'?'Administrador':`Representante • ${user.region}`;
+      el('teamBtn').classList.toggle('visible',user.role==='admin');el('sheetBtn').classList.toggle('visible',user.role==='admin');
+    }
+    async function logout(){if(cloud.auth)await signOut(cloud.auth);state.user=null;state.all=[];state.filtered=[];state.assignments={};showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';el('teamBtn').classList.remove('visible');el('sheetBtn').classList.remove('visible');el('loginPass').value=''}
+    function startAuthObserver(){
+      if(cloud.authObserverStarted)return;cloud.authObserverStarted=true;
+      onAuthStateChanged(cloud.auth,async firebaseUser=>{
+        if(!firebaseUser){state.user=null;showLogin();return}
+        try{
+          el('loadingOverlay').classList.remove('hidden');
+          const profile=await bootstrapOrLoadProfile(firebaseUser);setSession(profile);await loadCloudState();await refreshData();
+        }catch(err){console.error(err);state.user=null;await signOut(cloud.auth).catch(()=>{});showLogin(friendlyFirebaseError(err))}
+      });
+    }
+    async function loginWithFirebase(ev){
+      ev.preventDefault();el('loginError').textContent='';
+      try{el('loadingOverlay').classList.remove('hidden');await signInWithEmailAndPassword(cloud.auth,el('loginUser').value.trim(),el('loginPass').value)}
+      catch(err){el('loadingOverlay').classList.add('hidden');el('loginError').textContent=friendlyFirebaseError(err)}
+    }
+    async function createFirstAdmin(){
+      const email=el('loginUser').value.trim(),password=el('loginPass').value;
+      if(!email||password.length<6){el('loginError').textContent='Informe um e-mail e uma senha com pelo menos 6 caracteres.';return}
+      el('loginError').textContent='';
+      el('loadingOverlay').classList.remove('hidden');
+      try{
+        // Primeiro tenta entrar. Isso corrige o caso em que o usuário já foi criado
+        // no Authentication numa tentativa anterior, mas o bootstrap do Firestore falhou.
+        await signInWithEmailAndPassword(cloud.auth,email,password);
+      }catch(signInErr){
+        try{
+          await createUserWithEmailAndPassword(cloud.auth,email,password);
+        }catch(createErr){
+          el('loadingOverlay').classList.add('hidden');
+          if(String(createErr?.code||'')==='auth/email-already-in-use'){
+            el('loginError').textContent='Este usuário já existe no Authentication. Confira a senha e clique em Entrar. Se a senha estiver correta e ainda não abrir, publique as regras do Firestore usando o botão abaixo.';
+          }else{
+            el('loginError').textContent=friendlyFirebaseError(createErr);
+          }
+        }
+      }
+    }
+
+    async function loadCloudState(){
+      if(!state.user)return;
+      const regSnap=await getDoc(doc(cloud.db,'config','regioes'));
+      state.regions=regSnap.exists()?(regSnap.data().items||[]):[{name:'Jaraguá',cities:['Jaraguá do Sul']}];
+      if(state.user.role==='admin'){
+        const usersSnap=await getDocs(collection(cloud.db,'usuarios'));
+        state.users=usersSnap.docs.map(d=>({id:d.id,uid:d.id,...d.data()})).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
+      }else state.users=[state.user];
+      await loadCustomerCache();
+    }
+    async function loadCustomerCache(){
+      if(!state.user)return;
+      let snap;
+      if(state.user.role==='admin') snap=await getDocs(collection(cloud.db,'clientes'));
+      else snap=await getDocs(query(collection(cloud.db,'clientes'),where('repUid','==',state.user.uid)));
+      state.customerDocs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      state.assignments={};
+      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt};
+    }
+
+    async function distributeRow(row){
+      const phone=customerKey(row);if(!phone)return {status:'invalid-phone'};
+      const existing=state.assignments[phone];if(existing)return {status:'duplicate',assignment:existing};
+      const region=regionOf(row);
+      const reps=getUsers().filter(u=>u.role==='rep'&&u.active!==false&&normalize(u.region)===normalize(region)).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
+      if(!reps.length)return {status:'waiting'};
+      const customerRef=doc(cloud.db,'clientes',phone),cursorRef=doc(cloud.db,'roletas',regionDocId(region));
+      let result={status:'waiting'};
+      await runTransaction(cloud.db,async tx=>{
+        const customerSnap=await tx.get(customerRef);
+        if(customerSnap.exists()){
+          const c=customerSnap.data();result={status:'duplicate',assignment:{repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:phone,firstLeadAt:c.firstLeadAt}};return;
+        }
+        const cursorSnap=await tx.get(cursorRef);const cursor=Math.max(0,Number(cursorSnap.exists()?cursorSnap.data().position:0))%reps.length;const rep=reps[cursor];const now=new Date().toISOString();
+        const payload={phone,repUid:rep.uid||rep.id,repName:rep.name,region,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row};
+        tx.set(customerRef,payload);tx.set(cursorRef,{region,position:(cursor+1)%reps.length,updatedAt:now},{merge:true});
+        result={status:'assigned',assignment:{repId:payload.repUid,repUid:payload.repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt}};
+      });
+      if(result.assignment)state.assignments[phone]=result.assignment;
+      return result;
+    }
+    async function runRoulette(showToast=false){
+      if(!state.user||state.user.role!=='admin')return {assigned:0,waiting:0,duplicates:0,invalid:0};
+      let assigned=0,waiting=0,duplicates=0,invalid=0;
+      const rows=[...state.all].sort((a,b)=>(parseDate(leadDate(a))?.getTime()||0)-(parseDate(leadDate(b))?.getTime()||0));const seen=new Set();
+      for(const row of rows){
+        const phone=customerKey(row);if(!phone){invalid++;continue}if(seen.has(phone)){duplicates++;continue}seen.add(phone);
+        if(state.assignments[phone]){duplicates++;continue}
+        try{const r=await distributeRow(row);if(r.status==='assigned')assigned++;else if(r.status==='duplicate')duplicates++;else if(r.status==='waiting')waiting++;else invalid++}
+        catch(err){console.error('Falha ao distribuir telefone',phone,err);waiting++}
+      }
+      await loadCustomerCache();
+      if(showToast){const parts=[];if(assigned)parts.push(`${assigned} novo(s) distribuído(s)`);if(duplicates)parts.push(`${duplicates} telefone(s) já cadastrado(s)`);if(waiting)parts.push(`${waiting} aguardando representante/região`);if(invalid)parts.push(`${invalid} sem telefone válido`);toast(parts.join(' • ')||'Nenhum cliente novo para distribuir.');}
+      updateTeamStats();return {assigned,waiting,duplicates,invalid};
+    }
+    function scopeRows(rows){
+      if(!state.user)return [];
+      if(state.user.role==='admin')return uniqueCustomerRows(rows);
+      return uniqueCustomerRows(rows).filter(r=>state.assignments[customerKey(r)]?.repId===state.user.uid);
+    }
+
+    function renderRegionRules(){
+      el('regionRules').value=getRegions().map(r=>`${r.name} = ${(r.cities||[]).join(', ')}`).join('\n');
+      el('repRegion').innerHTML=getRegions().map(r=>`<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}</option>`).join('')||'<option value="">Cadastre uma região</option>';
+    }
+    function updateRoleRegionState(){
+      const isAdmin=el('repRole')?.value==='admin';
+      if(!el('repRegion')) return;
+      el('repRegion').disabled=isAdmin;
+      el('repRegion').required=!isAdmin;
+      el('repRegion').title=isAdmin?'Administradores têm acesso a todas as regiões.':'';
+    }
+    function renderRepList(){
+      const users=getUsers().sort((a,b)=>{
+        if(a.role!==b.role) return a.role==='admin'?-1:1;
+        return (Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR');
+      });
+      el('repList').innerHTML=users.length?users.map(u=>{
+        const isRep=u.role==='rep';
+        const isSelf=u.id===state.user?.uid;
+        const roleLabel=isRep?'Representante':'Administrador';
+        const regionLabel=isRep?` • ${escapeHtml(u.region||'Sem região')}`:'';
+        const moveBtns=isRep?`<button data-move="up" data-id="${u.id}" title="Subir na ordem da roleta">↑</button><button data-move="down" data-id="${u.id}" title="Descer na ordem da roleta">↓</button>`:'';
+        const toggleBtn=isSelf?`<button disabled title="Você não pode bloquear o próprio acesso">●</button>`:`<button data-toggle="${u.id}" title="${u.active!==false?'Bloquear acesso':'Liberar acesso'}">${u.active!==false?'🔒':'▶'}</button>`;
+        return `<div class="rep-row"><div class="rep-main"><strong>${escapeHtml(u.name)}</strong><span>${escapeHtml(u.email||'')} • ${roleLabel}${regionLabel} • ${u.active!==false?'Acesso ativo':'Acesso bloqueado'}</span></div><div class="rep-actions">${moveBtns}<button data-password="${u.id}" title="Enviar redefinição de senha">✉</button>${toggleBtn}</div></div>`;
+      }).join(''):'<div class="empty-table">Nenhum usuário cadastrado.</div>';
+      el('repList').querySelectorAll('[data-password]').forEach(b=>b.onclick=()=>resetRepPassword(b.dataset.password));
+      el('repList').querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleRep(b.dataset.toggle));
+      el('repList').querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>moveRep(b.dataset.id,b.dataset.move));
+      updateTeamStats();
+    }
+    function updateTeamStats(){
+      if(!document.getElementById('statReps'))return;const reps=getUsers().filter(u=>u.role==='rep'&&u.active!==false),unique=uniqueCustomerRows(state.all),assigned=unique.filter(r=>state.assignments[customerKey(r)]).length,waiting=Math.max(0,unique.length-assigned);el('statReps').textContent=reps.length;el('statAssigned').textContent=assigned;el('statWaiting').textContent=waiting;
+    }
+    function openTeam(){renderRegionRules();updateRoleRegionState();renderRepList();el('teamBackdrop').classList.add('open')}
+    function closeTeam(){el('teamBackdrop').classList.remove('open')}
+    async function addRepresentative(ev){
+      ev.preventDefault();
+      const name=el('repName').value.trim(),email=el('repLogin').value.trim().toLowerCase(),password=el('repPassword').value,role=el('repRole').value,selectedRegion=el('repRegion').value;
+      const region=role==='admin'?'Todas':selectedRegion;
+      if(!name||!email||password.length<6||(role==='rep'&&!region)){toast('Preencha nome, e-mail, tipo de acesso e uma senha de pelo menos 6 caracteres. Para representante, selecione a região.');return}
+      let secondaryApp,secondaryAuth,cred;
+      try{
+        secondaryApp=initializeApp(cloud.config,'provision_'+Date.now());
+        secondaryAuth=getAuth(secondaryApp);
+        cred=await createUserWithEmailAndPassword(secondaryAuth,email,password);
+        const reps=getUsers().filter(u=>u.role==='rep');
+        const nextOrder=role==='rep'?(reps.length?Math.max(...reps.map(x=>Number(x.sortOrder||0)))+1:1):0;
+        await setDoc(doc(cloud.db,'usuarios',cred.user.uid),{name,email,role,region,active:true,sortOrder:nextOrder,createdAt:new Date().toISOString()});
+        await signOut(secondaryAuth);
+        ev.target.reset();
+        el('repRole').value='rep';
+        updateRoleRegionState();
+        await loadCloudState();renderRegionRules();renderRepList();
+        if(role==='rep') await runRoulette(false);
+        applyFilters();
+        toast(role==='admin'?'Administrador criado com acesso total.':'Representante criado e incluído na roleta.');
+      }catch(err){
+        console.error(err);
+        if(cred?.user){try{await deleteUser(cred.user)}catch{}}
+        toast(friendlyFirebaseError(err));
+      }finally{if(secondaryApp)await deleteApp(secondaryApp).catch(()=>{})}
+    }
+    async function resetRepPassword(id){const u=getUsers().find(x=>x.id===id);if(!u?.email)return;try{await sendPasswordResetEmail(cloud.auth,u.email);toast(`E-mail de redefinição enviado para ${u.email}.`)}catch(err){toast(friendlyFirebaseError(err))}}
+    async function toggleRep(id){
+      const u=getUsers().find(x=>x.id===id);if(!u)return;
+      if(id===state.user?.uid){toast('Você não pode bloquear o próprio acesso enquanto está conectado.');return}
+      try{
+        await setDoc(doc(cloud.db,'usuarios',id),{active:u.active===false},{merge:true});
+        await loadCloudState();renderRepList();
+        toast(u.active===false?'Acesso liberado.':'Acesso bloqueado.');
+      }catch(err){toast(friendlyFirebaseError(err))}
+    }
+    async function moveRep(id,dir){
+      const reps=getUsers().filter(u=>u.role==='rep').sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)),idx=reps.findIndex(x=>x.id===id),target=dir==='up'?idx-1:idx+1;if(idx<0||target<0||target>=reps.length)return;const a=reps[idx],b=reps[target],ao=Number(a.sortOrder||idx+1),bo=Number(b.sortOrder||target+1);try{await Promise.all([setDoc(doc(cloud.db,'usuarios',a.id),{sortOrder:bo},{merge:true}),setDoc(doc(cloud.db,'usuarios',b.id),{sortOrder:ao},{merge:true})]);await loadCloudState();renderRepList()}catch(err){toast(friendlyFirebaseError(err))}
+    }
+    async function saveRegions(){
+      const lines=el('regionRules').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),regions=[];for(const line of lines){const [name,...rest]=line.split('=');if(!name?.trim())continue;regions.push({name:name.trim(),cities:rest.join('=').split(',').map(x=>x.trim()).filter(Boolean)})}if(!regions.length){toast('Informe ao menos uma região.');return}
+      try{await setDoc(doc(cloud.db,'config','regioes'),{items:regions,updatedAt:new Date().toISOString()});state.regions=regions;renderRegionRules();renderRepList();await runRoulette(false);applyFilters();toast('Mapa de regiões salvo no Firestore.')}catch(err){toast(friendlyFirebaseError(err))}
+    }
+    async function changeAdminPassword(){const password=el('newAdminPassword').value;if(password.length<6){toast('Use uma senha com pelo menos 6 caracteres.');return}try{await updatePassword(cloud.auth.currentUser,password);el('newAdminPassword').value='';toast('Senha do administrador alterada no Firebase Authentication.')}catch(err){toast(friendlyFirebaseError(err))}}
+    async function resetAssignments(){if(!confirm('Reiniciar somente a posição da roleta? Nenhum cliente já cadastrado será redistribuído.'))return;try{for(const reg of getRegions())await setDoc(doc(cloud.db,'roletas',regionDocId(reg.name)),{region:reg.name,position:0,updatedAt:new Date().toISOString()},{merge:true});toast('Posição da roleta reiniciada. Clientes existentes foram preservados.')}catch(err){toast(friendlyFirebaseError(err))}}
+
     const el = id => document.getElementById(id);
     const fmtInt = new Intl.NumberFormat('pt-BR');
     const fmtMoney = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
@@ -337,6 +843,8 @@
     const FIELD_GROUPS = {
       name: ['nome','name','full_name','fullname','nome_completo','nome completo','seu nome','qual e o seu nome','qual é o seu nome','nome do lead','contact_name'],
       phone: ['telefone','phone','phone_number','phonenumber','numero de telefone','número de telefone','celular','whatsapp','telefone whatsapp','telefone_whatsapp','mobile','mobile_phone'],
+      email: ['email','e-mail','e mail','email_address','email address','endereço de email','endereco de email'],
+      document: ['cpf','cnpj','cpf/cnpj','cpf_cnpj','documento','document','document_number'],
       city: ['cidade','city','municipio','município','cidade/uf','cidade uf','qual cidade voce mora','qual cidade você mora','qual e a sua cidade','qual é a sua cidade','em qual cidade voce mora','em qual cidade você mora','localidade'],
       spend: ['quanto_você_gasta_de_energia_por_mês?','quanto voce gasta de energia por mes','quanto você gasta de energia por mês','gasto mensal','valor da conta','valor conta de luz','conta de luz','consumo','media mensal','média mensal'],
       date: ['created_time','created time','created_at','created at','data','data de entrada','data de criação','data de criacao','timestamp','carimbo de data/hora','date'],
@@ -465,7 +973,7 @@
       }).filter(r=>Object.values(r).some(v=>String(v).trim()!==''));
     }
 
-    window.google = window.google || {};
+    const google = window.google = window.google || {};
     google.visualization = google.visualization || {};
     google.visualization.Query = google.visualization.Query || {};
     let pendingResolve=null, pendingReject=null;
@@ -486,17 +994,20 @@
     }
 
     async function refreshData(manual=false){
-      if(state.loading) return; state.loading=true;
-      setSync('loading',manual?'Atualizando…':'Sincronizando…');
+      if(state.loading||!state.user)return;state.loading=true;setSync('loading',manual?'Atualizando…':'Sincronizando…');
       try{
-        const rows=await loadSheet();
-        state.all=rows; state.lastSync=new Date(); populateFilters(); applyFilters();
-        setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);
-        if(manual) toast('Dados atualizados com sucesso.');
-      }catch(err){
-        console.error(err); setSync('error','Falha na conexão'); toast(err.message || 'Não foi possível carregar a planilha.');
-        state.all=[]; applyFilters();
-      }finally{state.loading=false;el('loadingOverlay').classList.add('hidden');}
+        await loadCloudState();
+        if(state.user.role==='admin'){
+          const rows=await loadSheet();state.all=rows;
+          await runRoulette(false);
+          await loadCustomerCache();
+        }else{
+          // Representante recebe somente os clientes atribuídos ao seu UID no Firestore.
+          state.all=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
+        }
+        state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);if(manual)toast('Dados atualizados com sucesso.');
+      }catch(err){console.error(err);setSync('error','Falha na conexão');toast(friendlyFirebaseError(err));state.all=[];applyFilters();}
+      finally{state.loading=false;el('loadingOverlay').classList.add('hidden')}
     }
 
     function setSync(type,text){
@@ -516,7 +1027,7 @@
     function applyFilters(){
       const q=normalize(el('searchInput').value), period=el('periodFilter').value, city=el('cityFilter').value, status=el('statusFilter').value, origin=el('originFilter').value;
       const now=new Date(); now.setHours(23,59,59,999);
-      state.filtered=state.all.filter(r=>{
+      state.filtered=scopeRows(state.all).filter(r=>{
         const hay=normalize([leadName(r),leadPhone(r),leadCity(r),field(r,'campaign'),field(r,'ad')].join(' '));
         if(q&&!hay.includes(q)) return false;
         if(city!=='all'&&String(leadCity(r)).trim()!==city) return false;
@@ -534,7 +1045,7 @@
       renderAll();
     }
 
-    function renderAll(){ renderKpis(); renderTrend(); renderCityRanking(); renderSpendBars(); renderOrigin(); renderStatus(); renderTable(); el('footerInfo').textContent=`${plural(state.filtered.length,'lead exibido','leads exibidos')} de ${state.all.length}`; }
+    function renderAll(){ renderKpis(); renderTrend(); renderCityRanking(); renderSpendBars(); renderOrigin(); renderStatus(); renderTable(); el('footerInfo').textContent=`${plural(state.filtered.length,'lead exibido','leads exibidos')} de ${scopeRows(state.all).length}`; }
 
     function renderKpis(){
       const rows=state.filtered, total=rows.length, valid=rows.filter(r=>normalize(statusOf(r))==='valid'||normalize(statusOf(r)).includes('valid')).length;
@@ -598,10 +1109,12 @@
     function statusBadge(status){const n=normalize(status);let cls='blue';if(n.includes('valid')||n.includes('ganh')||n.includes('fech'))cls='green';else if(n.includes('perd')||n.includes('inval')||n.includes('cancel'))cls='red';else if(n.includes('contato')||n.includes('negoc'))cls='amber';return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;}
     function renderTable(){
       const body=el('leadTableBody');el('tableCount').textContent=plural(state.filtered.length,'lead','leads');
-      if(!state.filtered.length){body.innerHTML='<tr><td colspan="10" class="empty-table">Nenhum lead encontrado com os filtros selecionados.</td></tr>';return;}
+      if(!state.filtered.length){body.innerHTML='<tr><td colspan="12" class="empty-table">Nenhum lead encontrado com os filtros selecionados.</td></tr>';return;}
+      const assignments=getAssignments();
       body.innerHTML=state.filtered.map((r,index)=>{
-        const name=String(leadName(r)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(r),city=leadCity(r)||'—',spend=leadSpend(r)||'—',p=priorityOf(r),organic=isOrganic(r),campaign=field(r,'campaign')||field(r,'ad')||'—',date=leadDate(r),initials=name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2),wa=waPhone(phone);
-        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(initials||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}</div></td></tr>`;
+        const name=String(leadName(r)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(r),city=leadCity(r)||'—',spend=leadSpend(r)||'—',p=priorityOf(r),organic=isOrganic(r),campaign=field(r,'campaign')||field(r,'ad')||'—',date=leadDate(r),ini=initials(name),wa=waPhone(phone),region=regionOf(r),assignment=assignments[leadKey(r)];
+        const rep=assignment?.repName||'Aguardando';
+        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}</div></td></tr>`;
       }).join('');
       body.querySelectorAll('[data-detail]').forEach(btn=>btn.addEventListener('click',()=>openModal(state.filtered[+btn.dataset.detail])));
     }
@@ -609,7 +1122,7 @@
     function openModal(row){
       const name=String(leadName(row)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(row),wa=waPhone(phone);
       el('modalTitle').textContent=name;el('modalSubtitle').textContent=isTestLead(row)?'Registro de teste do formulário':'Detalhes completos recebidos da planilha';
-      const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
+      const a=assignmentOf(row);const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Região',regionOf(row)],['Representante',a?.repName||'Aguardando distribuição'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
 
       // Exibe qualquer coluna adicional recebida, mesmo que a integração mude o título dela.
       const recognized=new Set(Object.values(FIELD_GROUPS).flat().map(compactKey));
@@ -618,7 +1131,7 @@
         .filter(([key,value])=>String(value??'').trim()!=='' && !recognized.has(compactKey(key)))
         .map(([key,value])=>[String(key).replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),String(value)]);
       const allDetails=details.concat(extras.length?[['Outras informações recebidas',`${extras.length} campo(s) adicional(is)`]]:[],extras);
-      el('modalBody').innerHTML=allDetails.map((d,i)=>`<div class="detail ${(i>=8)?'full':''}"><label>${escapeHtml(d[0])}</label><strong>${escapeHtml(d[1])}</strong></div>`).join('');
+      el('modalBody').innerHTML=allDetails.map((d,i)=>`<div class="detail ${(i>=10)?'full':''}"><label>${escapeHtml(d[0])}</label><strong>${escapeHtml(d[1])}</strong></div>`).join('');
       el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
       el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}`;navigator.clipboard?.writeText(text).then(()=>toast('Resumo copiado.'));};
       el('modalBackdrop').classList.add('open');
@@ -627,18 +1140,29 @@
     function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),3500);}
 
     function exportCsv(){
-      const columns=[['created_time','Data'],['nome','Nome'],['telefone','Telefone'],['cidade','Cidade'],['quanto_você_gasta_de_energia_por_mês?','Gasto mensal'],['lead_status','Status'],['is_organic','Orgânico'],['platform','Plataforma'],['campaign_name','Campanha'],['adset_name','Conjunto'],['ad_name','Anúncio']];
-      const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const lines=[columns.map(c=>q(c[1])).join(';')];state.filtered.forEach(r=>lines.push(columns.map(c=>q(field(r,c[0]))).join(';')));
+      const headers=['Data','Nome','Telefone','Cidade','Região','Representante','Gasto mensal','Status','Orgânico','Plataforma','Campanha','Conjunto','Anúncio'];
+      const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const lines=[headers.map(q).join(';')];
+      state.filtered.forEach(r=>{const a=assignmentOf(r);lines.push([leadDate(r),leadName(r),leadPhone(r),leadCity(r),regionOf(r),a?.repName||'',leadSpend(r),statusOf(r),isOrganic(r)?'Sim':'Não',field(r,'platform'),field(r,'campaign'),field(r,'adset'),field(r,'ad')].map(q).join(';'));});
       const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`leads_jaragua_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);toast('Arquivo CSV gerado.');
     }
+
 
     ['searchInput'].forEach(id=>el(id).addEventListener('input',applyFilters));
     ['periodFilter','cityFilter','statusFilter','originFilter'].forEach(id=>el(id).addEventListener('change',applyFilters));
     el('clearFilters').addEventListener('click',()=>{el('searchInput').value='';el('periodFilter').value='all';el('cityFilter').value='all';el('statusFilter').value='all';el('originFilter').value='all';applyFilters();});
     el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);
-    el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-    let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin();},180);});
-    refreshData();setInterval(()=>refreshData(false),CONFIG.refreshMs);
+    el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
+    el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
+    el('teamBtn').addEventListener('click',openTeam);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
+    el('loginForm').addEventListener('submit',loginWithFirebase);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyFirestoreRules);el('saveFirebaseConfigBtn').addEventListener('click',saveFirebaseSetup);el('copyRulesBtn').addEventListener('click',copyFirestoreRules);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam()}});
+    let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
+    (async()=>{
+      const cfg=savedFirebaseConfig();
+      if(!cfg){showSetup();return}
+      try{await initFirebase(cfg)}catch(err){console.error(err);showSetup(friendlyFirebaseError(err))}
+    })();
+    setInterval(()=>{if(state.user)refreshData(false)},CONFIG.refreshMs);
   </script>
 </body>
 </html>
