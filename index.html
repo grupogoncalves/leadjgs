@@ -162,6 +162,12 @@
     .action-btn:hover{color:var(--text);background:rgba(255,255,255,.075);transform:translateY(-1px)}
     .action-btn.whatsapp:hover{color:var(--green)}
     .action-btn svg{width:15px;height:15px}
+    .contact-btn{width:auto;min-width:33px;padding:0 10px;gap:6px;font-size:10px;font-weight:800;white-space:nowrap}
+    .contact-btn.done{color:var(--green);border-color:rgba(78,226,154,.20);background:rgba(78,226,154,.08)}
+    .contact-btn.done:hover{color:#baf5d7;background:rgba(78,226,154,.14)}
+    .contact-state{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+    .contact-state strong{font-size:10px}
+    .contact-state small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
     .empty-table{text-align:center;color:var(--muted);padding:48px !important}
     .footer{display:flex;justify-content:space-between;gap:15px;align-items:center;color:var(--muted);font-size:11px;padding:18px 2px 4px}
     .loading-overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(3,12,19,.78);backdrop-filter:blur(8px);z-index:99;transition:.3s ease}
@@ -303,6 +309,7 @@
         <div class="sync-pill"><span class="sync-dot" id="syncDot"></span><span id="syncText">Conectando…</span></div>
         <div class="user-box" id="userBox" style="display:none"><span class="user-avatar" id="userAvatar">A</span><span class="user-meta"><strong id="userName">Usuário</strong><span id="userRole">Perfil</span></span></div>
         <button class="btn admin-only" id="teamBtn" title="Gerenciar usuários, acessos, representantes e regiões">Usuários &amp; Acessos</button>
+        <button class="btn admin-only" id="copyCurrentRulesBtn" title="Copiar as regras atualizadas do banco">Copiar regras</button>
         <button class="btn" id="logoutBtn" title="Sair" style="display:none">Sair</button>
         <button class="btn" id="exportBtn" title="Exportar dados filtrados">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
@@ -389,7 +396,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Lead</th><th>Telefone</th><th>Cidade</th><th>Região</th><th>Representante</th><th>Gasto mensal</th><th>Prioridade</th><th>Origem</th><th>Status</th><th>Campanha</th><th>Entrada</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Lead</th><th>Telefone</th><th>Cidade</th><th>Região</th><th>Representante</th><th>Gasto mensal</th><th>Prioridade</th><th>Origem</th><th>Status</th><th>Contato</th><th>Campanha</th><th>Entrada</th><th>Ações</th></tr></thead>
             <tbody id="leadTableBody"></tbody>
           </table>
         </div>
@@ -544,7 +551,15 @@ service cloud.${'fire'+'store'} {
     }
     match /clientes/{phone} {
       allow read: if isAdmin() || (signedIn() && resource.data.repUid == request.auth.uid);
-      allow create, update, delete: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        signedIn()
+        && resource.data.repUid == request.auth.uid
+        && request.resource.data.repUid == resource.data.repUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'contacted','contactedAt','contactedByUid','contactedByName'
+        ])
+      );
     }
     match /roletas/{region} {
       allow read, write: if isAdmin();
@@ -763,7 +778,7 @@ service cloud.${'fire'+'store'} {
       else snap=await getDocs(query(collection(cloud.db,'clientes'),where('repUid','==',state.user.uid)));
       state.customerDocs=snap.docs.map(d=>({id:d.id,...d.data()}));
       state.assignments={};
-      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt};
+      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||''};
     }
 
     async function distributeRow(row){
@@ -785,12 +800,12 @@ service cloud.${'fire'+'store'} {
       await runTransaction(cloud.db,async tx=>{
         const customerSnap=await tx.get(customerRef);
         if(customerSnap.exists()){
-          const c=customerSnap.data();result={status:'duplicate',assignment:{repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:phone,firstLeadAt:c.firstLeadAt}};return;
+          const c=customerSnap.data();result={status:'duplicate',assignment:{repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:phone,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||''}};return;
         }
         const cursorSnap=await tx.get(cursorRef);const cursor=Math.max(0,Number(cursorSnap.exists()?cursorSnap.data().position:0))%reps.length;const rep=reps[cursor];const now=new Date().toISOString();
         const payload={phone,repUid:rep.uid||rep.id,repName:rep.name,region,city,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row};
         tx.set(customerRef,payload);tx.set(cursorRef,{region,city,position:(cursor+1)%reps.length,updatedAt:now},{merge:true});
-        result={status:'assigned',assignment:{repId:payload.repUid,repUid:payload.repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt}};
+        result={status:'assigned',assignment:{repId:payload.repUid,repUid:payload.repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt,contacted:false,contactedAt:'',contactedByUid:'',contactedByName:''}};
       });
       if(result.assignment)state.assignments[phone]=result.assignment;
       return result;
@@ -1224,22 +1239,56 @@ service cloud.${'fire'+'store'} {
       el('statusBars').innerHTML=data.length?data.map(([name,value],i)=>`<div><div class="mini-bar-top"><span>${escapeHtml(name)}</span><strong>${value}</strong></div><div class="mini-track"><div class="mini-fill" style="width:${value/max*100}%;background:${colors[i%colors.length]}"></div></div></div>`).join(''):'<div class="empty-table">Nenhum status para exibir.</div>';
     }
     function statusBadge(status){const n=normalize(status);let cls='blue';if(n.includes('valid')||n.includes('ganh')||n.includes('fech'))cls='green';else if(n.includes('perd')||n.includes('inval')||n.includes('cancel'))cls='red';else if(n.includes('contato')||n.includes('negoc'))cls='amber';return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;}
+    function contactInfoOf(row){return assignmentOf(row)||{};}
+    function contactBadge(row){
+      const c=contactInfoOf(row);
+      if(c.contacted){
+        const when=c.contactedAt?fmtDate(c.contactedAt):'Registrado';
+        return `<span class="contact-state"><span class="badge green">Contatado</span><span><small>${escapeHtml(when)}</small></span></span>`;
+      }
+      return '<span class="badge amber">Pendente</span>';
+    }
+    function canMarkContact(row){
+      const a=assignmentOf(row);
+      if(!state.user||!a)return false;
+      return state.user.role==='admin'||a.repId===state.user.uid;
+    }
+    async function toggleLeadContact(row){
+      const phone=customerKey(row),a=assignmentOf(row);
+      if(!phone||!a||!canMarkContact(row)){toast('Este lead não está disponível para registrar contato.');return;}
+      const next=!a.contacted,now=next?new Date().toISOString():'';
+      try{
+        await setDoc(doc(cloud.db,'clientes',phone),{
+          contacted:next,
+          contactedAt:now,
+          contactedByUid:next?(state.user.uid||state.user.id||''):'',
+          contactedByName:next?(state.user.name||''):''
+        },{merge:true});
+        a.contacted=next;a.contactedAt=now;a.contactedByUid=next?(state.user.uid||state.user.id||''):'';a.contactedByName=next?(state.user.name||''):'';
+        const cached=state.customerDocs.find(c=>c.id===phone);
+        if(cached){cached.contacted=a.contacted;cached.contactedAt=a.contactedAt;cached.contactedByUid=a.contactedByUid;cached.contactedByName=a.contactedByName;}
+        renderTable();
+        toast(next?'Contato marcado como realizado.':'Marcação de contato removida.');
+      }catch(err){console.error(err);toast(friendlyAccessError(err));}
+    }
     function renderTable(){
       const body=el('leadTableBody');el('tableCount').textContent=plural(state.filtered.length,'lead','leads');
-      if(!state.filtered.length){body.innerHTML='<tr><td colspan="12" class="empty-table">Nenhum lead encontrado com os filtros selecionados.</td></tr>';return;}
+      if(!state.filtered.length){body.innerHTML='<tr><td colspan="13" class="empty-table">Nenhum lead encontrado com os filtros selecionados.</td></tr>';return;}
       const assignments=getAssignments();
       body.innerHTML=state.filtered.map((r,index)=>{
         const name=String(leadName(r)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(r),city=leadCity(r)||'—',spend=leadSpend(r)||'—',p=priorityOf(r),organic=isOrganic(r),campaign=field(r,'campaign')||field(r,'ad')||'—',date=leadDate(r),ini=initials(name),wa=waPhone(phone),region=regionOf(r),assignment=assignments[leadKey(r)];
-        const rep=assignment?.repName||'Aguardando';
-        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}</div></td></tr>`;
+        const rep=assignment?.repName||'Aguardando',contacted=assignment?.contacted===true,markAllowed=canMarkContact(r);
+        const contactAction=markAllowed?`<button class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contacted?'Contatado':'Marcar contato'}</span></button>`:'';
+        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${contactAction}</div></td></tr>`;
       }).join('');
       body.querySelectorAll('[data-detail]').forEach(btn=>btn.addEventListener('click',()=>openModal(state.filtered[+btn.dataset.detail])));
+      body.querySelectorAll('[data-contact]').forEach(btn=>btn.addEventListener('click',()=>toggleLeadContact(state.filtered[+btn.dataset.contact])));
     }
 
     function openModal(row){
       const name=String(leadName(row)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(row),wa=waPhone(phone);
       el('modalTitle').textContent=name;el('modalSubtitle').textContent=isTestLead(row)?'Registro de teste do formulário':'Detalhes completos recebidos da planilha';
-      const a=assignmentOf(row);const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Região',regionOf(row)],['Representante',a?.repName||'Aguardando distribuição'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
+      const a=assignmentOf(row);const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Região',regionOf(row)],['Representante',a?.repName||'Aguardando distribuição'],['Contato comercial',a?.contacted?`Realizado em ${fmtDate(a.contactedAt)}${a.contactedByName?' por '+a.contactedByName:''}`:'Pendente'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
 
       // Exibe qualquer coluna adicional recebida, mesmo que a integração mude o título dela.
       const recognized=new Set(Object.values(FIELD_GROUPS).flat().map(compactKey));
@@ -1249,8 +1298,10 @@ service cloud.${'fire'+'store'} {
         .map(([key,value])=>[String(key).replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),String(value)]);
       const allDetails=details.concat(extras.length?[['Outras informações recebidas',`${extras.length} campo(s) adicional(is)`]]:[],extras);
       el('modalBody').innerHTML=allDetails.map((d,i)=>`<div class="detail ${(i>=10)?'full':''}"><label>${escapeHtml(d[0])}</label><strong>${escapeHtml(d[1])}</strong></div>`).join('');
-      el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
-      el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}`;navigator.clipboard?.writeText(text).then(()=>toast('Resumo copiado.'));};
+      const contactModalBtn=canMarkContact(row)?`<button class="btn ${a?.contacted?'':'primary'}" id="modalContactBtn">${a?.contacted?'Desmarcar contato':'Marcar contato realizado'}</button>`:'';
+      el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${contactModalBtn}${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
+      el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}\nContato: ${a?.contacted?'Realizado':'Pendente'}`;navigator.clipboard?.writeText(text).then(()=>toast('Resumo copiado.'));};
+      if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{await toggleLeadContact(row);closeModal();};
       el('modalBackdrop').classList.add('open');
     }
     function closeModal(){el('modalBackdrop').classList.remove('open');}
@@ -1270,7 +1321,7 @@ service cloud.${'fire'+'store'} {
     el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);
     el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
     el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
-    el('teamBtn').addEventListener('click',openTeam);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
+    el('teamBtn').addEventListener('click',openTeam);el('copyCurrentRulesBtn').addEventListener('click',copyAccessRules);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
     el('loginForm').addEventListener('submit',loginUser);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyAccessRules);el('copyRulesBtn').addEventListener('click',copyAccessRules);
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam();closeRepCitiesEditor()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
