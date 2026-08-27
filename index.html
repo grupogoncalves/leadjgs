@@ -434,7 +434,7 @@
         </section>
         <section class="admin-panel">
           <div class="roulette-info"><div class="roulette-stat"><strong id="statReps">0</strong><span>Representantes</span></div><div class="roulette-stat"><strong id="statAssigned">0</strong><span>Distribuídos</span></div><div class="roulette-stat"><strong id="statWaiting">0</strong><span>Aguardando região</span></div></div>
-          <h4>Usuários cadastrados</h4><p>Administradores têm acesso total. Representantes visualizam somente os clientes atribuídos a eles. A ordem dos representantes define a roleta.</p>
+          <h4>Usuários cadastrados</h4><p>Administradores têm acesso total. Representantes visualizam somente os clientes atribuídos a eles. A roleta é independente por cidade e entrega 1 cliente por vez, seguindo a ordem dos representantes: A → B → C → A.</p>
           <div class="rep-list" id="repList"></div>
           <div class="admin-actions"><button class="btn primary" id="runRouletteBtn" type="button">Rodar roleta agora</button><button class="btn" id="resetAssignmentsBtn" type="button">Reiniciar posição</button></div>
         </section>
@@ -515,7 +515,7 @@
       }
     ];
     const cloneDefaultRegions = () => DEFAULT_REGIONS.map(r=>({name:r.name,cities:[...r.cities]}));
-    const state = { all: [], filtered: [], lastSync: null, loading: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set() };
+    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set() };
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
     const ACCESS_RULES = `rules_version = '2';
@@ -781,48 +781,122 @@ service cloud.${'fire'+'store'} {
       for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||''};
     }
 
+    function repsForCity(city){
+      const cityKey=normalize(city);
+      return getUsers().filter(u=>{
+        if(u.role!=='rep'||u.active===false) return false;
+        const cities=Array.isArray(u.cities)?u.cities.filter(Boolean):[];
+        return cities.some(c=>normalize(c)===cityKey);
+      }).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
+    }
+
+    function lastAssignedRepForCity(city,reps){
+      const cityKey=normalize(city);
+      const validRepIds=new Set(reps.map(r=>r.uid||r.id));
+      let latest=null;
+      for(const c of (state.customerDocs||[])){
+        const docCity=String(c.city||leadCity(c.leadData||{})||'').trim();
+        if(normalize(docCity)!==cityKey || !validRepIds.has(c.repUid)) continue;
+        const when=parseDate(c.assignedAt||c.firstLeadAt)||parseDate(leadDate(c.leadData||{}));
+        const time=when?.getTime()||0;
+        if(!latest || time>latest.time) latest={repUid:c.repUid,time};
+      }
+      return latest?.repUid||'';
+    }
+
     async function distributeRow(row){
       const phone=customerKey(row);if(!phone)return {status:'invalid-phone'};
       const existing=state.assignments[phone];if(existing)return {status:'duplicate',assignment:existing};
       const region=regionOf(row);
       const city=String(leadCity(row)||'').trim();
-      const cityKey=normalize(city);
-      const reps=getUsers().filter(u=>{
-        if(u.role!=='rep'||u.active===false) return false;
-        const cities=Array.isArray(u.cities)?u.cities.filter(Boolean):[];
-        return cities.some(c=>normalize(c)===cityKey);
-      }).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
+      const reps=repsForCity(city);
       if(!reps.length)return {status:'waiting'};
+
+      // Cada cidade possui sua própria sequência. O próximo representante é calculado
+      // pelo ÚLTIMO representante que recebeu um cliente nessa cidade, e não apenas
+      // por um índice numérico. Assim a alternância continua correta mesmo quando a
+      // ordem da equipe muda, alguém é pausado ou o painel é sincronizado novamente.
+      const fallbackLastRepUid=lastAssignedRepForCity(city,reps);
       const customerRef=doc(cloud.db,'clientes',phone);
       const cursorId=`${regionDocId(region)}__${compactKey(city)||'semcidade'}`;
       const cursorRef=doc(cloud.db,'roletas',cursorId);
       let result={status:'waiting'};
+
       await runTransaction(cloud.db,async tx=>{
         const customerSnap=await tx.get(customerRef);
         if(customerSnap.exists()){
           const c=customerSnap.data();result={status:'duplicate',assignment:{repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:phone,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||''}};return;
         }
-        const cursorSnap=await tx.get(cursorRef);const cursor=Math.max(0,Number(cursorSnap.exists()?cursorSnap.data().position:0))%reps.length;const rep=reps[cursor];const now=new Date().toISOString();
-        const payload={phone,repUid:rep.uid||rep.id,repName:rep.name,region,city,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row};
-        tx.set(customerRef,payload);tx.set(cursorRef,{region,city,position:(cursor+1)%reps.length,updatedAt:now},{merge:true});
-        result={status:'assigned',assignment:{repId:payload.repUid,repUid:payload.repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt,contacted:false,contactedAt:'',contactedByUid:'',contactedByName:''}};
+
+        const cursorSnap=await tx.get(cursorRef);
+        const cursorData=cursorSnap.exists()?(cursorSnap.data()||{}):{};
+        const hasIdentityCursor=Object.prototype.hasOwnProperty.call(cursorData,'lastRepUid');
+        const lastRepUid=hasIdentityCursor?String(cursorData.lastRepUid||''):String(fallbackLastRepUid||'');
+        const lastIndex=reps.findIndex(r=>(r.uid||r.id)===lastRepUid);
+        const nextIndex=lastIndex>=0?(lastIndex+1)%reps.length:0;
+        const rep=reps[nextIndex];
+        const repUid=rep.uid||rep.id;
+        const now=new Date().toISOString();
+        const payload={phone,repUid,repName:rep.name,region,city,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row};
+        const sequence=Math.max(0,Number(cursorData.sequence||0))+1;
+
+        tx.set(customerRef,payload);
+        tx.set(cursorRef,{
+          region,city,
+          lastRepUid:repUid,
+          lastRepName:rep.name,
+          lastCustomerKey:phone,
+          position:(nextIndex+1)%reps.length,
+          sequence,
+          updatedAt:now
+        },{merge:true});
+        result={status:'assigned',assignment:{repId:repUid,repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt,contacted:false,contactedAt:'',contactedByUid:'',contactedByName:''}};
       });
       if(result.assignment)state.assignments[phone]=result.assignment;
       return result;
     }
+
     async function runRoulette(showToast=false){
       if(!state.user||state.user.role!=='admin')return {assigned:0,waiting:0,duplicates:0,invalid:0};
-      let assigned=0,waiting=0,duplicates=0,invalid=0;
-      const rows=[...state.all].sort((a,b)=>(parseDate(leadDate(a))?.getTime()||0)-(parseDate(leadDate(b))?.getTime()||0));const seen=new Set();
-      for(const row of rows){
-        const phone=customerKey(row);if(!phone){invalid++;continue}if(seen.has(phone)){duplicates++;continue}seen.add(phone);
-        if(state.assignments[phone]){duplicates++;continue}
-        try{const r=await distributeRow(row);if(r.status==='assigned')assigned++;else if(r.status==='duplicate')duplicates++;else if(r.status==='waiting')waiting++;else invalid++}
-        catch(err){console.error('Falha ao distribuir telefone',phone,err);waiting++}
+      if(state.rouletteRunning){
+        if(showToast)toast('A roleta já está processando os leads.');
+        return {assigned:0,waiting:0,duplicates:0,invalid:0};
       }
-      await loadCustomerCache();
-      if(showToast){const parts=[];if(assigned)parts.push(`${assigned} novo(s) distribuído(s)`);if(duplicates)parts.push(`${duplicates} telefone(s) já cadastrado(s)`);if(waiting)parts.push(`${waiting} aguardando representante/região`);if(invalid)parts.push(`${invalid} sem telefone válido`);toast(parts.join(' • ')||'Nenhum cliente novo para distribuir.');}
-      updateTeamStats();return {assigned,waiting,duplicates,invalid};
+      state.rouletteRunning=true;
+      let assigned=0,waiting=0,duplicates=0,invalid=0;
+      try{
+        // Ordena cronologicamente e processa um cliente de cada vez. Como cada cidade
+        // possui um cursor próprio, leads da mesma cidade seguem A → B → C → A...
+        const rows=[...state.all].sort((a,b)=>(parseDate(leadDate(a))?.getTime()||0)-(parseDate(leadDate(b))?.getTime()||0));
+        const seen=new Set();
+        for(const row of rows){
+          const phone=customerKey(row);
+          if(!phone){invalid++;continue}
+          if(seen.has(phone)){duplicates++;continue}
+          seen.add(phone);
+          if(state.assignments[phone]){duplicates++;continue}
+          try{
+            const r=await distributeRow(row);
+            if(r.status==='assigned')assigned++;
+            else if(r.status==='duplicate')duplicates++;
+            else if(r.status==='waiting')waiting++;
+            else invalid++;
+          }catch(err){console.error('Falha ao distribuir telefone',phone,err);waiting++}
+        }
+        await loadCustomerCache();
+        if(showToast){
+          const parts=[];
+          if(assigned)parts.push(`${assigned} novo(s) distribuído(s) em sequência por cidade`);
+          if(duplicates)parts.push(`${duplicates} telefone(s) já cadastrado(s)`);
+          if(waiting)parts.push(`${waiting} aguardando representante/região`);
+          if(invalid)parts.push(`${invalid} sem telefone válido`);
+          toast(parts.join(' • ')||'Nenhum cliente novo para distribuir.');
+        }
+        updateTeamStats();
+        return {assigned,waiting,duplicates,invalid};
+      }finally{
+        state.rouletteRunning=false;
+      }
     }
     function scopeRows(rows){
       if(!state.user)return [];
@@ -962,7 +1036,7 @@ service cloud.${'fire'+'store'} {
       try{await setDoc(doc(cloud.db,'config','regioes'),{items:regions,updatedAt:new Date().toISOString()});state.regions=regions;renderRegionRules();renderRepList();await runRoulette(false);applyFilters();toast('Mapa de regiões salvo.')}catch(err){toast(friendlyAccessError(err))}
     }
     async function changeAdminPassword(){const password=el('newAdminPassword').value;if(password.length<6){toast('Use uma senha com pelo menos 6 caracteres.');return}try{await updatePassword(cloud.auth.currentUser,password);el('newAdminPassword').value='';toast('Senha do administrador alterada.')}catch(err){toast(friendlyAccessError(err))}}
-    async function resetAssignments(){if(!confirm('Reiniciar somente a posição da roleta por cidade? Nenhum cliente já cadastrado será redistribuído.'))return;try{for(const reg of getRegions()){for(const city of (reg.cities||[])){const id=`${regionDocId(reg.name)}__${compactKey(city)||'semcidade'}`;await setDoc(doc(cloud.db,'roletas',id),{region:reg.name,city,position:0,updatedAt:new Date().toISOString()},{merge:true})}}toast('Posição da roleta por cidade reiniciada. Clientes existentes foram preservados.')}catch(err){toast(friendlyAccessError(err))}}
+    async function resetAssignments(){if(!confirm('Reiniciar a sequência da roleta por cidade? Nenhum cliente já cadastrado será redistribuído.'))return;try{for(const reg of getRegions()){for(const city of (reg.cities||[])){const id=`${regionDocId(reg.name)}__${compactKey(city)||'semcidade'}`;await setDoc(doc(cloud.db,'roletas',id),{region:reg.name,city,lastRepUid:'',lastRepName:'',lastCustomerKey:'',position:0,sequence:0,updatedAt:new Date().toISOString()},{merge:true})}}toast('Sequência da roleta por cidade reiniciada. Clientes existentes foram preservados; o próximo lead começa pelo primeiro representante da ordem.')}catch(err){toast(friendlyAccessError(err))}}
 
     const el = id => document.getElementById(id);
     const fmtInt = new Intl.NumberFormat('pt-BR');
