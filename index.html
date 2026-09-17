@@ -161,6 +161,17 @@
     .action-btn{width:33px;height:33px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--muted);display:grid;place-items:center;transition:.16s ease}
     .action-btn:hover{color:var(--text);background:rgba(255,255,255,.075);transform:translateY(-1px)}
     .action-btn.whatsapp:hover{color:var(--green)}
+    .action-btn.transfer:hover{color:var(--violet)}
+    .sheet-chooser-modal{width:min(760px,100%)}
+    .sheet-choice-grid{padding:20px 22px 22px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .sheet-choice{position:relative;text-align:left;padding:18px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.022));color:var(--text);transition:.18s ease;overflow:hidden}
+    .sheet-choice:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,var(--cyan),var(--green));opacity:.85}
+    .sheet-choice:hover{transform:translateY(-2px);border-color:rgba(77,215,238,.30);background:rgba(255,255,255,.065);box-shadow:0 14px 30px rgba(0,0,0,.18)}
+    .sheet-choice-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(77,215,238,.10);color:var(--cyan);margin-bottom:14px}
+    .sheet-choice-icon svg{width:19px;height:19px}
+    .sheet-choice strong{display:block;font-size:14px;margin-bottom:6px}
+    .sheet-choice span{display:block;color:var(--muted);font-size:11px;line-height:1.45}
+    .sheet-choice small{display:inline-flex;margin-top:14px;color:var(--green);font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
     .action-btn svg{width:15px;height:15px}
     .contact-btn{width:auto;min-width:33px;padding:0 10px;gap:6px;font-size:10px;font-weight:800;white-space:nowrap}
     .contact-btn.done{color:var(--green);border-color:rgba(78,226,154,.20);background:rgba(78,226,154,.08)}
@@ -198,7 +209,7 @@
       .app{padding:14px}.topbar{align-items:flex-start}.top-actions{gap:7px}.sync-pill{width:100%;justify-content:center;order:3}.topbar{flex-wrap:wrap}
       .kpi{grid-column:span 12;min-height:128px}.filters{grid-template-columns:1fr}.spend-card,.origin-card,.status-card{grid-column:span 12}
       .donut-wrap{grid-template-columns:1fr}.donut-holder{height:165px}.donut-wrap{height:auto}.modal-body{grid-template-columns:1fr}.detail.full{grid-column:auto}
-      .btn .hide-mobile{display:none}.footer{align-items:flex-start;flex-direction:column}.city-check-grid{grid-template-columns:1fr}.city-region-items{grid-template-columns:1fr}
+      .btn .hide-mobile{display:none}.footer{align-items:flex-start;flex-direction:column}.city-check-grid{grid-template-columns:1fr}.city-region-items{grid-template-columns:1fr}.sheet-choice-grid{grid-template-columns:1fr}
     }
 
 
@@ -255,6 +266,247 @@
     @media(max-width:850px){.admin-layout{grid-template-columns:1fr}.admin-form-grid{grid-template-columns:1fr}.admin-field.full{grid-column:auto}.roulette-info{grid-template-columns:1fr 1fr 1fr}}
 
   </style>
+
+  <style id="premium-visual-v2">
+    /* PREMIUM_VISUAL_V2 — visual-only override. Application logic intentionally unchanged. */
+    :root{
+      --bg:#06111b;
+      --bg-2:#0a1a28;
+      --panel:rgba(11,29,44,.86);
+      --panel-strong:#0f293d;
+      --line:rgba(160,194,218,.12);
+      --text:#f5f9fc;
+      --muted:#8ea7b9;
+      --green:#55e1a0;
+      --green-2:#21bf7a;
+      --cyan:#57cfe6;
+      --blue:#6a91ff;
+      --amber:#f7bb59;
+      --red:#fb7185;
+      --violet:#aa90ff;
+      --shadow:0 18px 48px rgba(0,0,0,.22);
+      --radius:20px;
+    }
+
+    *{scrollbar-width:thin;scrollbar-color:rgba(142,167,185,.30) transparent}
+    *::-webkit-scrollbar{width:9px;height:9px}
+    *::-webkit-scrollbar-track{background:transparent}
+    *::-webkit-scrollbar-thumb{background:rgba(142,167,185,.26);border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+    *::-webkit-scrollbar-thumb:hover{background:rgba(142,167,185,.42);border:2px solid transparent;background-clip:padding-box}
+
+    body{
+      background:
+        radial-gradient(circle at 0% 0%, rgba(87,207,230,.09), transparent 26%),
+        radial-gradient(circle at 100% 0%, rgba(85,225,160,.08), transparent 24%),
+        linear-gradient(150deg,#050f18 0%,#071722 48%,#06111b 100%);
+      background-attachment:fixed;
+    }
+    body:before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.14;
+      background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+      background-size:34px 34px;
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 72%);
+    }
+
+    .app{max-width:1760px;padding:18px 22px 30px}
+
+    .topbar{
+      position:sticky;top:12px;z-index:35;margin-bottom:18px;padding:13px 14px;
+      border:1px solid var(--line);border-radius:22px;
+      background:rgba(7,21,32,.82);backdrop-filter:blur(20px) saturate(135%);
+      box-shadow:0 12px 34px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.025);
+    }
+    .brand{gap:12px}
+    .logo{
+      width:46px;height:46px;border-radius:14px;
+      background:linear-gradient(145deg,#5be1a4 0%,#4ccce5 100%);
+      color:#04271b;box-shadow:0 10px 26px rgba(77,218,173,.18),inset 0 1px 0 rgba(255,255,255,.32);
+    }
+    .logo svg{width:25px;height:25px}
+    .title-wrap h1{font-size:clamp(19px,1.65vw,25px);font-weight:760;letter-spacing:-.04em}
+    .title-wrap p{margin-top:4px;color:#819caf;font-size:12px}
+    .top-actions{gap:8px}
+    .sync-pill,.user-box{
+      min-height:40px;border-color:rgba(160,194,218,.10);background:rgba(255,255,255,.028);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.015);
+    }
+    .sync-pill{padding:9px 12px}
+    .user-box{padding:6px 9px}
+    .user-avatar{width:31px;height:31px;border-radius:10px;background:linear-gradient(145deg,rgba(87,207,230,.18),rgba(85,225,160,.15));color:#bff3df}
+
+    .btn{
+      min-height:40px;padding:9px 12px;border-radius:12px;border-color:rgba(160,194,218,.12);
+      background:rgba(255,255,255,.035);font-size:12px;font-weight:650;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.015);
+      transition:transform .17s ease,border-color .17s ease,background .17s ease,box-shadow .17s ease;
+    }
+    .btn:hover{transform:translateY(-1px);border-color:rgba(160,194,218,.24);background:rgba(255,255,255,.062);box-shadow:0 8px 18px rgba(0,0,0,.12)}
+    .btn.primary{
+      background:linear-gradient(135deg,#27c780,#4ad99a);color:#052517;font-weight:800;
+      box-shadow:0 9px 24px rgba(33,191,122,.16),inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .btn.primary:hover{background:linear-gradient(135deg,#31d28a,#58e2a5);box-shadow:0 11px 28px rgba(33,191,122,.22)}
+    .btn.icon-only{width:40px;padding:9px}
+
+    .hero-grid{gap:14px;margin-bottom:14px}
+    .kpi{
+      min-height:132px;padding:17px 18px;border-radius:20px;border-color:rgba(160,194,218,.11);
+      background:linear-gradient(148deg,rgba(15,40,59,.94),rgba(8,24,36,.90));
+      box-shadow:0 14px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.018);
+      transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+    }
+    .kpi:hover{transform:translateY(-2px);border-color:rgba(160,194,218,.20);box-shadow:0 18px 40px rgba(0,0,0,.21),inset 0 1px 0 rgba(255,255,255,.025)}
+    .kpi:after{width:132px;height:132px;right:-55px;top:-58px;opacity:.075;filter:blur(2px)}
+    .kpi-label{font-size:11px;color:#8da7b9;text-transform:uppercase;letter-spacing:.055em;font-weight:740}
+    .kpi-icon{width:36px;height:36px;border-radius:11px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+    .kpi-icon svg{width:17px;height:17px}
+    .kpi-value{font-size:clamp(29px,3.2vw,38px);margin:15px 0 7px;font-weight:780}
+    .kpi-note{font-size:11px;gap:6px}
+
+    .filters{
+      gap:9px;padding:11px;border-radius:17px;border-color:rgba(160,194,218,.11);
+      background:rgba(8,25,38,.72);backdrop-filter:blur(18px) saturate(120%);
+      box-shadow:0 10px 26px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.016);margin-bottom:14px;
+    }
+    .field input,.field select{
+      height:42px;border-radius:11px;border-color:rgba(160,194,218,.11);background:rgba(7,25,39,.86);
+      color:#edf5fa;padding-left:12px;font-size:12px;
+    }
+    .field.has-icon input{padding-left:37px}
+    .field input::placeholder{color:#718b9d}
+    .field input:focus,.field select:focus{border-color:rgba(87,207,230,.42);box-shadow:0 0 0 3px rgba(87,207,230,.07);background:#092033}
+    .clear-btn{height:42px}
+
+    .content-grid{gap:14px}
+    .card{
+      border-color:rgba(160,194,218,.10);border-radius:20px;
+      background:linear-gradient(150deg,rgba(12,32,48,.88),rgba(8,24,36,.84));
+      box-shadow:0 15px 38px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.015);
+    }
+    .card-header{padding:17px 18px 0}
+    .card-title h2{font-size:15px;font-weight:760;letter-spacing:-.025em}
+    .card-title p{font-size:11px;color:#7f9aac;margin-top:4px}
+    .result-count{padding:7px 9px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.035);font-size:10px}
+    .chart-body{padding:13px 18px 18px}
+    .rank-list{padding:14px 18px 18px;gap:11px}
+    .rank-row{gap:10px}
+    .rank-name{font-size:12px;color:#dce8ef}
+    .rank-track,.mini-track{background:rgba(255,255,255,.045)}
+    .rank-fill{background:linear-gradient(90deg,#4ac9e1,#52dc9b)}
+    .rank-value{font-size:11px;color:#8ca5b7}
+    .mini-bars{padding:16px 18px 18px;gap:14px}
+    .mini-bar-top{font-size:11px}
+    .donut-wrap{padding:13px 18px 8px}
+    .donut-center strong{font-size:27px}
+    .legend{gap:9px}
+    .legend-item{font-size:11px}
+
+    .table-card{overflow:hidden}
+    .table-card .card-header{padding-bottom:13px;align-items:center}
+    .table-wrap{margin-top:0;border-top:1px solid rgba(160,194,218,.09)}
+    table{min-width:1160px}
+    th,td{padding:12px 13px;border-bottom:1px solid rgba(160,194,218,.065);font-size:11px}
+    th{
+      color:#89a4b6;font-size:9px;letter-spacing:.085em;font-weight:800;
+      background:rgba(7,23,35,.96);backdrop-filter:blur(10px);
+    }
+    tbody tr{background:transparent}
+    tbody tr:nth-child(even){background:rgba(255,255,255,.009)}
+    tbody tr:hover{background:rgba(87,207,230,.038)}
+    .lead-cell{gap:9px}
+    .avatar{width:32px;height:32px;border-radius:10px;background:linear-gradient(145deg,rgba(87,207,230,.15),rgba(85,225,160,.13));color:#8ee7dc;font-size:10px}
+    .lead-name{font-size:11px;font-weight:760}
+    .lead-sub{font-size:9px;color:#7691a4}
+    .badge{padding:5px 7px;font-size:9px;border:1px solid rgba(255,255,255,.035);background:rgba(255,255,255,.035)}
+    .badge:before{width:5px;height:5px}
+    .assign-badge{padding:5px 7px;font-size:9px;border-color:rgba(87,207,230,.09);background:rgba(87,207,230,.06)}
+    .region-badge{padding:5px 7px;font-size:9px;background:rgba(170,144,255,.065)}
+    .priority{font-size:10px}
+    .priority-dot{width:7px;height:7px}
+    .actions{gap:5px}
+    .action-btn{width:31px;height:31px;border-radius:9px;border-color:rgba(160,194,218,.10);background:rgba(255,255,255,.025)}
+    .action-btn:hover{background:rgba(255,255,255,.065);border-color:rgba(160,194,218,.18)}
+    .contact-btn{width:auto;min-width:31px;padding:0 9px;font-size:9px}
+
+    .footer{padding:15px 3px 4px;color:#708b9e;font-size:10px}
+
+    .loading-overlay{background:rgba(3,11,18,.77);backdrop-filter:blur(10px)}
+    .loader-card{padding:23px 28px;border-radius:18px;background:linear-gradient(145deg,#0c263a,#0a1d2c);border-color:rgba(160,194,218,.12);box-shadow:0 24px 70px rgba(0,0,0,.34)}
+    .spinner{width:32px;height:32px;border-width:3px;border-top-color:#55e1a0}
+    .toast{right:18px;bottom:18px;border-radius:13px;background:rgba(12,39,58,.96);border-color:rgba(160,194,218,.14);box-shadow:0 18px 42px rgba(0,0,0,.26);font-size:11px}
+
+    .modal-backdrop{background:rgba(2,8,13,.74);backdrop-filter:blur(12px)}
+    .modal{
+      border-radius:22px;border-color:rgba(160,194,218,.12);
+      background:linear-gradient(150deg,#0b2234,#081b29 72%);
+      box-shadow:0 28px 80px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.02);
+    }
+    .modal-head{padding:19px 20px;border-bottom-color:rgba(160,194,218,.10)}
+    .modal-head h3{font-size:18px;font-weight:780}
+    .modal-head p{font-size:11px;color:#7e99ab}
+    .close-btn{width:34px;height:34px;border-radius:10px;border-color:rgba(160,194,218,.11);background:rgba(255,255,255,.028)}
+    .close-btn:hover{background:rgba(255,255,255,.065);color:#fff}
+    .modal-body{padding:19px 20px;gap:10px}
+    .detail{padding:12px;border-radius:12px;background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.035)}
+    .detail label{font-size:9px;color:#7893a6;margin-bottom:6px}
+    .detail strong{font-size:12px}
+    .modal-actions{padding:0 20px 20px}
+
+    .auth-screen{
+      background:radial-gradient(circle at 8% 0%,rgba(87,207,230,.10),transparent 31%),radial-gradient(circle at 92% 8%,rgba(85,225,160,.10),transparent 29%),linear-gradient(150deg,#040e16,#071824 55%,#05111b);
+    }
+    .auth-card{
+      border-color:rgba(160,194,218,.12);border-radius:24px;background:rgba(9,27,41,.94);
+      box-shadow:0 30px 90px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.02);padding:27px;
+    }
+    .auth-brand{margin-bottom:21px}
+    .auth-brand .logo{width:48px;height:48px}
+    .auth-brand h2{font-size:22px}
+    .auth-brand p{color:#819daf}
+    .auth-field label,.admin-field label{font-size:9px;color:#7893a6;letter-spacing:.075em}
+    .auth-field input,.auth-field textarea,.admin-field input,.admin-field select,.admin-field textarea{
+      border-color:rgba(160,194,218,.11);border-radius:11px;background:#071c2b;padding:11px 12px;min-height:42px;font-size:12px;
+    }
+    .auth-field input:focus,.auth-field textarea:focus,.admin-field input:focus,.admin-field select:focus,.admin-field textarea:focus{border-color:rgba(87,207,230,.42);box-shadow:0 0 0 3px rgba(87,207,230,.07)}
+    .auth-hint{border:1px solid rgba(160,194,218,.07);background:rgba(255,255,255,.022);font-size:10px;color:#7893a6}
+
+    .admin-modal{width:min(1040px,100%)}
+    .admin-layout{padding:17px 20px 20px;gap:14px}
+    .admin-panel{border-color:rgba(160,194,218,.09);border-radius:15px;background:rgba(255,255,255,.018);padding:15px}
+    .admin-panel h4{font-size:13px}.admin-panel>p{font-size:10px;color:#7d98aa}
+    .roulette-info{gap:7px}
+    .roulette-stat{padding:10px;border-radius:11px;background:rgba(255,255,255,.026);border-color:rgba(255,255,255,.025)}
+    .roulette-stat strong{font-size:17px}
+    .rep-list{gap:7px}
+    .rep-row{padding:10px 11px;border-color:rgba(160,194,218,.085);border-radius:11px;background:rgba(255,255,255,.018)}
+    .rep-row:hover{background:rgba(255,255,255,.03);border-color:rgba(160,194,218,.14)}
+    .city-check-grid{border-color:rgba(160,194,218,.10);background:#081d2d;border-radius:11px;padding:8px;gap:6px}
+    .city-check-item{padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.025);font-size:11px}
+    .city-check-item:hover{background:rgba(255,255,255,.05)}
+
+    @media (max-width:1180px){
+      .app{padding:16px}
+      .topbar{top:8px}
+      .filters{grid-template-columns:repeat(3,1fr)}
+    }
+    @media (max-width:720px){
+      .app{padding:10px}
+      .topbar{position:relative;top:auto;border-radius:17px;padding:12px;margin-bottom:12px}
+      .logo{width:42px;height:42px}
+      .title-wrap h1{font-size:19px}.title-wrap p{font-size:11px}
+      .top-actions{width:100%}.top-actions .btn{flex:1}.top-actions .btn.icon-only{flex:0 0 40px}
+      .sync-pill{order:0;width:auto;flex:1}
+      .hero-grid,.content-grid{gap:10px}
+      .kpi{min-height:118px;padding:15px;border-radius:16px}
+      .kpi-value{font-size:30px;margin-top:13px}
+      .filters{padding:9px;border-radius:14px;gap:7px}
+      .card{border-radius:16px}.card-header{padding:15px 14px 0}.chart-body,.rank-list,.mini-bars{padding-left:14px;padding-right:14px}
+      .table-card .card-header{padding-bottom:11px}.table-tools{width:100%}.result-count{margin-left:auto}
+      .modal{border-radius:18px}.modal-head,.modal-body{padding:16px}.modal-actions{padding:0 16px 16px}
+      .auth-card{padding:22px;border-radius:20px}
+    }
+  </style>
+
 </head>
 <body>
 
@@ -315,10 +567,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
           <span class="hide-mobile">Exportar CSV</span>
         </button>
-        <a class="btn admin-only" id="sheetBtn" href="https://docs.google.com/spreadsheets/d/14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM/edit?gid=0" target="_blank" rel="noopener">
+        <button class="btn admin-only" id="sheetBtn" type="button" title="Escolher região e abrir planilha">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
           <span class="hide-mobile">Abrir planilha</span>
-        </a>
+        </button>
         <button class="btn primary icon-only" id="refreshBtn" title="Atualizar agora">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>
         </button>
@@ -403,7 +655,7 @@
       </article>
     </section>
 
-    <footer class="footer"><span>Fonte: Google Planilhas + Banco de dados • Atualização automática a cada 60 segundos</span><span id="footerInfo">Aguardando sincronização</span></footer>
+    <footer class="footer"><span>Fonte: Google Planilhas (3 fontes) + Banco de dados • Atualização automática a cada 60 segundos</span><span id="footerInfo">Aguardando sincronização</span></footer>
   </main>
 
 
@@ -453,6 +705,46 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="sheetChooserBackdrop" role="dialog" aria-modal="true" aria-labelledby="sheetChooserTitle">
+    <div class="modal sheet-chooser-modal">
+      <div class="modal-head">
+        <div><h3 id="sheetChooserTitle">Qual planilha você quer abrir?</h3><p>Escolha a região ou fonte dos leads.</p></div>
+        <button class="close-btn" id="sheetChooserClose" aria-label="Fechar">×</button>
+      </div>
+      <div class="sheet-choice-grid">
+        <button class="sheet-choice" type="button" data-sheet-url="https://docs.google.com/spreadsheets/d/14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM/edit?gid=0">
+          <span class="sheet-choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM4 9h16M9 4v16"/></svg></span>
+          <strong>Jaraguá / Norte Catarinense</strong>
+          <span>Base principal • Jaraguá do Sul e operação do Norte Catarinense.</span>
+          <small>Abrir planilha →</small>
+        </button>
+        <button class="sheet-choice" type="button" data-sheet-url="https://docs.google.com/spreadsheets/d/1V3paQg3q15KF-LHW898r1oLzET4-MRVzjPfSL3CLN6g/edit?usp=sharing">
+          <span class="sheet-choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM4 9h16M9 4v16"/></svg></span>
+          <strong>Blumenau / Vale do Itajaí</strong>
+          <span>Fonte dedicada aos leads de Blumenau.</span>
+          <small>Abrir planilha →</small>
+        </button>
+        <button class="sheet-choice" type="button" data-sheet-url="https://docs.google.com/spreadsheets/d/1Nl5gJa0mNOduBY5Sn5C_VLjHDrnPRypRIBcyYhdnEtc/edit?usp=sharing">
+          <span class="sheet-choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM4 9h16M9 4v16"/></svg></span>
+          <strong>Dr. Pedrinho / Vale do Itajaí</strong>
+          <span>Fonte dedicada aos leads de Doutor Pedrinho.</span>
+          <small>Abrir planilha →</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="transferBackdrop" role="dialog" aria-modal="true" aria-labelledby="transferTitle">
+    <div class="modal" style="width:min(560px,100%)">
+      <div class="modal-head"><div><h3 id="transferTitle">Transferir lead</h3><p id="transferLeadInfo">Escolha o novo representante.</p></div><button class="close-btn" id="transferClose" aria-label="Fechar">×</button></div>
+      <div class="modal-body" style="grid-template-columns:1fr">
+        <div class="admin-field"><label>Novo representante</label><select id="transferRepSelect"></select></div>
+        <div class="detail full"><label>Regra</label><strong>Representantes habilitados para a cidade aparecem primeiro. O administrador também pode atribuir manualmente um lead em Aguardando. A ação não altera a sequência automática da roleta.</strong></div>
+      </div>
+      <div class="modal-actions"><button class="btn" id="transferCancel" type="button">Cancelar</button><button class="btn primary" id="transferConfirm" type="button">Confirmar transferência</button></div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <div class="modal-head"><div><h3 id="modalTitle">Detalhes do lead</h3><p id="modalSubtitle"></p></div><button class="close-btn" id="modalClose" aria-label="Fechar">×</button></div>
@@ -474,6 +766,11 @@
     const CONFIG = {
       sheetId: '14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM',
       gid: '0',
+      sheetSources: [
+        { label:'Base principal', sheetId:'14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM', gid:'0', city:'' },
+        { label:'Dr. Pedrinho', sheetId:'1Nl5gJa0mNOduBY5Sn5C_VLjHDrnPRypRIBcyYhdnEtc', gid:'0', city:'Doutor Pedrinho' },
+        { label:'Blumenau', sheetId:'1V3paQg3q15KF-LHW898r1oLzET4-MRVzjPfSL3CLN6g', gid:'0', city:'Blumenau' }
+      ],
       refreshMs: 60000
     };
 
@@ -515,7 +812,7 @@
       }
     ];
     const cloneDefaultRegions = () => DEFAULT_REGIONS.map(r=>({name:r.name,cities:[...r.cities]}));
-    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set() };
+    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set(), transferRow: null };
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
     const ACCESS_RULES = `rules_version = '2';
@@ -644,10 +941,19 @@ service cloud.${'fire'+'store'} {
       for(const row of ordered){const key=customerKey(row);if(!key||seen.has(key))continue;seen.add(key);unique.push(row)}
       return unique;
     }
+    const CITY_ALIASES = new Map([
+      ['dr pedrinho','Doutor Pedrinho'],
+      ['doutor pedrinho','Doutor Pedrinho']
+    ]);
+    function canonicalCity(value){
+      const raw=String(value||'').trim();
+      return CITY_ALIASES.get(normalize(raw))||raw;
+    }
+
     function regionOf(row){
       const direct=String(field(row,'region','regiao','região')||'').trim();if(direct)return direct;
-      const city=normalize(leadCity(row));
-      for(const reg of getRegions()){if((reg.cities||[]).some(c=>normalize(c)===city))return reg.name}
+      const city=normalize(canonicalCity(leadCity(row)));
+      for(const reg of getRegions()){if((reg.cities||[]).some(c=>normalize(canonicalCity(c))===city))return reg.name}
       if(getRegions().length===1)return getRegions()[0].name;
       return 'Sem região';
     }
@@ -778,25 +1084,33 @@ service cloud.${'fire'+'store'} {
       else snap=await getDocs(query(collection(cloud.db,'clientes'),where('repUid','==',state.user.uid)));
       state.customerDocs=snap.docs.map(d=>({id:d.id,...d.data()}));
       state.assignments={};
-      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||''};
+      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||'',transferredAt:c.transferredAt||'',transferredByUid:c.transferredByUid||'',transferredByName:c.transferredByName||''};
     }
 
     function repsForCity(city){
-      const cityKey=normalize(city);
+      const cityKey=normalize(canonicalCity(city));
       return getUsers().filter(u=>{
         if(u.role!=='rep'||u.active===false) return false;
         const cities=Array.isArray(u.cities)?u.cities.filter(Boolean):[];
-        return cities.some(c=>normalize(c)===cityKey);
+        return cities.some(c=>normalize(canonicalCity(c))===cityKey);
       }).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
     }
 
+    function manualAssignmentReps(city,currentUid=''){
+      const cityIds=new Set(repsForCity(city).map(r=>r.uid||r.id));
+      return getUsers().filter(u=>u.role==='rep'&&u.active!==false&&(u.uid||u.id)!==currentUid).sort((a,b)=>{
+        const ae=cityIds.has(a.uid||a.id)?0:1,be=cityIds.has(b.uid||b.id)?0:1;
+        return (ae-be)||(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR');
+      }).map(r=>({...r,cityEnabled:cityIds.has(r.uid||r.id)}));
+    }
+
     function lastAssignedRepForCity(city,reps){
-      const cityKey=normalize(city);
+      const cityKey=normalize(canonicalCity(city));
       const validRepIds=new Set(reps.map(r=>r.uid||r.id));
       let latest=null;
       for(const c of (state.customerDocs||[])){
         const docCity=String(c.city||leadCity(c.leadData||{})||'').trim();
-        if(normalize(docCity)!==cityKey || !validRepIds.has(c.repUid)) continue;
+        if(normalize(canonicalCity(docCity))!==cityKey || !validRepIds.has(c.repUid)) continue;
         const when=parseDate(c.assignedAt||c.firstLeadAt)||parseDate(leadDate(c.leadData||{}));
         const time=when?.getTime()||0;
         if(!latest || time>latest.time) latest={repUid:c.repUid,time};
@@ -808,7 +1122,7 @@ service cloud.${'fire'+'store'} {
       const phone=customerKey(row);if(!phone)return {status:'invalid-phone'};
       const existing=state.assignments[phone];if(existing)return {status:'duplicate',assignment:existing};
       const region=regionOf(row);
-      const city=String(leadCity(row)||'').trim();
+      const city=canonicalCity(leadCity(row));
       const reps=repsForCity(city);
       if(!reps.length)return {status:'waiting'};
 
@@ -1095,7 +1409,7 @@ service cloud.${'fire'+'store'} {
 
     const leadName = row => field(row,'name');
     const leadPhone = row => field(row,'phone');
-    const leadCity = row => field(row,'city');
+    const leadCity = row => canonicalCity(field(row,'city'));
     const leadSpend = row => field(row,'spend');
     const leadDate = row => field(row,'date');
 
@@ -1187,16 +1501,33 @@ service cloud.${'fire'+'store'} {
       if(pendingResolve){ try{pendingResolve(gvizToRows(response));}catch(e){pendingReject?.(e);} finally{pendingResolve=pendingReject=null;} }
     };
 
-    function loadSheet(){
+    function loadSheet(source=CONFIG.sheetSources[0],sourceIndex=0){
       return new Promise((resolve,reject)=>{
-        pendingResolve=resolve; pendingReject=reject;
-        const old=document.getElementById('sheet-data-script'); if(old) old.remove();
-        const script=document.createElement('script'); script.id='sheet-data-script';
-        script.src=`https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?tqx=out:json&headers=1&gid=${CONFIG.gid}&cache=${Date.now()}`;
-        script.onerror=()=>{pendingResolve=pendingReject=null; reject(new Error('Não foi possível acessar a planilha. Verifique se ela está compartilhada como “Qualquer pessoa com o link”.'));};
+        pendingResolve=rows=>{
+          const city=canonicalCity(source.city||'');
+          resolve(rows.map(row=>{
+            if(city && !field(row,'city')) row.Cidade=city;
+            return row;
+          }));
+        };
+        pendingReject=reject;
+        const scriptId=`sheet-data-script-${sourceIndex}`;
+        const old=document.getElementById(scriptId); if(old) old.remove();
+        const script=document.createElement('script'); script.id=scriptId;
+        script.src=`https://docs.google.com/spreadsheets/d/${source.sheetId}/gviz/tq?tqx=out:json&headers=1&gid=${source.gid||'0'}&cache=${Date.now()}`;
+        script.onerror=()=>{pendingResolve=pendingReject=null; reject(new Error(`Não foi possível acessar a planilha de ${source.label}. Verifique se ela está compartilhada como “Qualquer pessoa com o link”.`));};
         document.head.appendChild(script);
-        setTimeout(()=>{if(pendingReject){pendingResolve=pendingReject=null; reject(new Error('A conexão com a planilha demorou demais.'));}},15000);
+        setTimeout(()=>{if(pendingReject){pendingResolve=pendingReject=null; reject(new Error(`A conexão com a planilha de ${source.label} demorou demais.`));}},15000);
       });
+    }
+
+    async function loadAllSheets(){
+      const merged=[];
+      for(let i=0;i<CONFIG.sheetSources.length;i++){
+        const rows=await loadSheet(CONFIG.sheetSources[i],i);
+        merged.push(...rows);
+      }
+      return merged;
     }
 
     async function refreshData(manual=false){
@@ -1204,7 +1535,7 @@ service cloud.${'fire'+'store'} {
       try{
         await loadCloudState();
         if(state.user.role==='admin'){
-          const rows=await loadSheet();state.all=rows;
+          const rows=await loadAllSheets();state.all=rows;
           await runRoulette(false);
           await loadCustomerCache();
         }else{
@@ -1345,6 +1676,67 @@ service cloud.${'fire'+'store'} {
         toast(next?'Contato marcado como realizado.':'Marcação de contato removida.');
       }catch(err){console.error(err);toast(friendlyAccessError(err));}
     }
+    function closeTransferLead(){
+      el('transferBackdrop').classList.remove('open');
+      state.transferRow=null;
+    }
+    function openTransferLead(row){
+      if(state.user?.role!=='admin'){toast('Somente administradores podem transferir ou atribuir leads.');return;}
+      const a=assignmentOf(row);
+      const city=canonicalCity(leadCity(row));
+      const currentUid=a?.repUid||a?.repId||'';
+      const reps=manualAssignmentReps(city,currentUid);
+      if(!reps.length){toast('Não há representante ativo disponível para receber este lead.');return;}
+      state.transferRow=row;
+      el('transferTitle').textContent=a?'Transferir lead':'Atribuir lead em espera';
+      el('transferLeadInfo').textContent=`${leadName(row)||'Lead'} • ${city||'Sem cidade'} • ${a?'Atual: '+(a.repName||'Sem representante'):'Status: Aguardando'}`;
+      el('transferRepSelect').innerHTML=reps.map(r=>`<option value="${escapeHtml(r.uid||r.id)}">${escapeHtml(r.name)}${r.region?' — '+escapeHtml(r.region):''}${r.cityEnabled?' • atende a cidade':' • atribuição manual'}</option>`).join('');
+      el('transferConfirm').textContent=a?'Confirmar transferência':'Atribuir representante';
+      el('transferBackdrop').classList.add('open');
+    }
+    async function transferLead(){
+      const row=state.transferRow;
+      if(!row||state.user?.role!=='admin')return;
+      const current=assignmentOf(row);
+      const phone=customerKey(row),repUid=el('transferRepSelect').value;
+      const rep=getUsers().find(r=>(r.uid||r.id)===repUid&&r.role==='rep'&&r.active!==false);
+      const city=canonicalCity(leadCity(row));
+      if(!phone){toast('Este lead não possui telefone válido para ser atribuído.');return;}
+      if(!rep){toast('Não foi possível identificar o representante.');return;}
+      if(!manualAssignmentReps(city,current?.repUid||current?.repId||'').some(r=>(r.uid||r.id)===repUid)){toast('Este representante não está disponível para esta atribuição.');return;}
+      const now=new Date().toISOString();
+      const payload={
+        repUid,
+        repName:rep.name,
+        region:regionOf(row),
+        city,
+        transferredAt:now,
+        transferredByUid:state.user.uid||state.user.id||'',
+        transferredByName:state.user.name||''
+      };
+      if(!current){
+        Object.assign(payload,{phone,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row,manualAssignment:true});
+      }
+      try{
+        await setDoc(doc(cloud.db,'clientes',phone),payload,{merge:true});
+        await loadCustomerCache();
+        closeTransferLead();
+        applyFilters();
+        toast(current?`Lead transferido para ${rep.name}.`:`Lead atribuído para ${rep.name}.`);
+      }catch(err){console.error(err);toast(friendlyAccessError(err));}
+    }
+
+    function openSheetChooser(){
+      if(state.user?.role!=='admin'){toast('Somente administradores podem abrir as planilhas de origem.');return;}
+      el('sheetChooserBackdrop').classList.add('open');
+    }
+    function closeSheetChooser(){el('sheetChooserBackdrop').classList.remove('open');}
+    function openSheetUrl(url){
+      if(!url)return;
+      window.open(url,'_blank','noopener');
+      closeSheetChooser();
+    }
+
     function renderTable(){
       const body=el('leadTableBody');el('tableCount').textContent=plural(state.filtered.length,'lead','leads');
       if(!state.filtered.length){body.innerHTML='<tr><td colspan="13" class="empty-table">Nenhum lead encontrado com os filtros selecionados.</td></tr>';return;}
@@ -1353,16 +1745,18 @@ service cloud.${'fire'+'store'} {
         const name=String(leadName(r)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(r),city=leadCity(r)||'—',spend=leadSpend(r)||'—',p=priorityOf(r),organic=isOrganic(r),campaign=field(r,'campaign')||field(r,'ad')||'—',date=leadDate(r),ini=initials(name),wa=waPhone(phone),region=regionOf(r),assignment=assignments[leadKey(r)];
         const rep=assignment?.repName||'Aguardando',contacted=assignment?.contacted===true,markAllowed=canMarkContact(r);
         const contactAction=markAllowed?`<button class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contacted?'Contatado':'Marcar contato'}</span></button>`:'';
-        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${contactAction}</div></td></tr>`;
+        const transferAction=(state.user?.role==='admin'&&customerKey(r))?`<button class="action-btn transfer" data-transfer="${index}" title="Transferir lead para outro representante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4 4m-4-4 4-4"/></svg></button>`:'';
+        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${transferAction}${contactAction}</div></td></tr>`;
       }).join('');
       body.querySelectorAll('[data-detail]').forEach(btn=>btn.addEventListener('click',()=>openModal(state.filtered[+btn.dataset.detail])));
       body.querySelectorAll('[data-contact]').forEach(btn=>btn.addEventListener('click',()=>toggleLeadContact(state.filtered[+btn.dataset.contact])));
+      body.querySelectorAll('[data-transfer]').forEach(btn=>btn.addEventListener('click',()=>openTransferLead(state.filtered[+btn.dataset.transfer])));
     }
 
     function openModal(row){
       const name=String(leadName(row)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(row),wa=waPhone(phone);
       el('modalTitle').textContent=name;el('modalSubtitle').textContent=isTestLead(row)?'Registro de teste do formulário':'Detalhes completos recebidos da planilha';
-      const a=assignmentOf(row);const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Região',regionOf(row)],['Representante',a?.repName||'Aguardando distribuição'],['Contato comercial',a?.contacted?`Realizado em ${fmtDate(a.contactedAt)}${a.contactedByName?' por '+a.contactedByName:''}`:'Pendente'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
+      const a=assignmentOf(row);const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Região',regionOf(row)],['Representante',a?.repName||'Aguardando distribuição'],['Contato comercial',a?.contacted?`Realizado em ${fmtDate(a.contactedAt)}${a.contactedByName?' por '+a.contactedByName:''}`:'Pendente'],['Última transferência',a?.transferredAt?`${fmtDate(a.transferredAt)}${a.transferredByName?' por '+a.transferredByName:''}`:'—'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
 
       // Exibe qualquer coluna adicional recebida, mesmo que a integração mude o título dela.
       const recognized=new Set(Object.values(FIELD_GROUPS).flat().map(compactKey));
@@ -1373,8 +1767,10 @@ service cloud.${'fire'+'store'} {
       const allDetails=details.concat(extras.length?[['Outras informações recebidas',`${extras.length} campo(s) adicional(is)`]]:[],extras);
       el('modalBody').innerHTML=allDetails.map((d,i)=>`<div class="detail ${(i>=10)?'full':''}"><label>${escapeHtml(d[0])}</label><strong>${escapeHtml(d[1])}</strong></div>`).join('');
       const contactModalBtn=canMarkContact(row)?`<button class="btn ${a?.contacted?'':'primary'}" id="modalContactBtn">${a?.contacted?'Desmarcar contato':'Marcar contato realizado'}</button>`:'';
-      el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${contactModalBtn}${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
+      const transferModalBtn=(state.user?.role==='admin'&&customerKey(row))?`<button class="btn" id="modalTransferBtn">${a?'Transferir lead':'Atribuir representante'}</button>`:'';
+      el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${transferModalBtn}${contactModalBtn}${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
       el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}\nContato: ${a?.contacted?'Realizado':'Pendente'}`;navigator.clipboard?.writeText(text).then(()=>toast('Resumo copiado.'));};
+      if(el('modalTransferBtn'))el('modalTransferBtn').onclick=()=>{closeModal();openTransferLead(row);};
       if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{await toggleLeadContact(row);closeModal();};
       el('modalBackdrop').classList.add('open');
     }
@@ -1392,12 +1788,14 @@ service cloud.${'fire'+'store'} {
     ['searchInput'].forEach(id=>el(id).addEventListener('input',applyFilters));
     ['periodFilter','cityFilter','statusFilter','originFilter'].forEach(id=>el(id).addEventListener('change',applyFilters));
     el('clearFilters').addEventListener('click',()=>{el('searchInput').value='';el('periodFilter').value='all';el('cityFilter').value='all';el('statusFilter').value='all';el('originFilter').value='all';applyFilters();});
-    el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);
+    el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);el('sheetBtn').addEventListener('click',openSheetChooser);
+    el('sheetChooserClose').addEventListener('click',closeSheetChooser);el('sheetChooserBackdrop').addEventListener('click',e=>{if(e.target===el('sheetChooserBackdrop'))closeSheetChooser();});document.querySelectorAll('[data-sheet-url]').forEach(btn=>btn.addEventListener('click',()=>openSheetUrl(btn.dataset.sheetUrl)));
     el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
+    el('transferClose').addEventListener('click',closeTransferLead);el('transferCancel').addEventListener('click',closeTransferLead);el('transferConfirm').addEventListener('click',transferLead);el('transferBackdrop').addEventListener('click',e=>{if(e.target===el('transferBackdrop'))closeTransferLead();});
     el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
     el('teamBtn').addEventListener('click',openTeam);el('copyCurrentRulesBtn').addEventListener('click',copyAccessRules);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
     el('loginForm').addEventListener('submit',loginUser);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyAccessRules);el('copyRulesBtn').addEventListener('click',copyAccessRules);
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam();closeRepCitiesEditor()}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
     updateSetupControls();
     (async()=>{
