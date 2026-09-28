@@ -143,6 +143,8 @@
     th,td{text-align:left;padding:14px 15px;border-bottom:1px solid rgba(153,184,207,.09);font-size:12px;vertical-align:middle}
     th{color:#9eb5c5;font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:750;background:rgba(7,24,38,.75);position:sticky;top:0;z-index:2}
     tbody tr{transition:.16s ease}
+    tbody tr.lead-row{cursor:pointer;outline:none}
+    tbody tr.lead-row:focus{background:rgba(77,215,238,.055);box-shadow:inset 3px 0 0 var(--cyan)}
     tbody tr:hover{background:rgba(77,215,238,.035)}
     .lead-cell{display:flex;align-items:center;gap:10px;min-width:190px}
     .avatar{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(77,215,238,.18),rgba(78,226,154,.16));color:var(--cyan);font-weight:800;flex:none}
@@ -201,6 +203,18 @@
     .detail label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
     .detail strong{font-size:13px;word-break:break-word}
     .modal-actions{padding:0 22px 22px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+    .new-lead-alert-modal{width:min(560px,100%);overflow:hidden}
+    .new-lead-alert-modal .modal-head{background:linear-gradient(135deg,rgba(78,226,154,.10),rgba(77,215,238,.06))}
+    .new-lead-kicker{display:inline-flex;align-items:center;gap:7px;margin-bottom:9px;padding:6px 9px;border-radius:999px;background:rgba(78,226,154,.10);color:var(--green);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}
+    .new-lead-kicker:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 5px rgba(78,226,154,.08)}
+    .new-lead-summary{padding:20px 22px 10px;display:grid;gap:12px}
+    .new-lead-name{font-size:24px;font-weight:850;letter-spacing:-.04em;line-height:1.05}
+    .new-lead-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .new-lead-item{padding:12px 13px;border:1px solid rgba(255,255,255,.05);border-radius:13px;background:rgba(255,255,255,.03)}
+    .new-lead-item span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+    .new-lead-item strong{display:block;font-size:12px;word-break:break-word}
+    .new-lead-reminder-note{padding:0 22px 18px;color:var(--muted);font-size:11px;line-height:1.5}
+    @media(max-width:560px){.new-lead-meta{grid-template-columns:1fr}.new-lead-name{font-size:21px}}
     @media (max-width:1180px){
       .kpi{grid-column:span 6}.chart-card,.city-card{grid-column:span 12}.spend-card,.origin-card,.status-card{grid-column:span 6}.status-card{grid-column:span 12}
       .filters{grid-template-columns:repeat(3,1fr)}
@@ -411,6 +425,8 @@
       background:rgba(7,23,35,.96);backdrop-filter:blur(10px);
     }
     tbody tr{background:transparent}
+    tbody tr.lead-row{cursor:pointer;outline:none}
+    tbody tr.lead-row:focus{background:rgba(87,207,230,.055);box-shadow:inset 3px 0 0 var(--cyan)}
     tbody tr:nth-child(even){background:rgba(255,255,255,.009)}
     tbody tr:hover{background:rgba(87,207,230,.038)}
     .lead-cell{gap:9px}
@@ -643,7 +659,7 @@
 
       <article class="card table-card">
         <div class="card-header">
-          <div class="card-title"><h2>Lista de leads</h2><p>Clique no nome para visualizar todos os dados</p></div>
+          <div class="card-title"><h2>Lista de leads</h2><p>Clique em qualquer parte do lead para visualizar todos os dados</p></div>
           <div class="table-tools"><span class="result-count" id="tableCount">0 leads</span></div>
         </div>
         <div class="table-wrap">
@@ -745,6 +761,26 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="newLeadAlertBackdrop" role="dialog" aria-modal="true" aria-labelledby="newLeadAlertTitle">
+    <div class="modal new-lead-alert-modal">
+      <div class="modal-head">
+        <div><div class="new-lead-kicker">Novo lead recebido</div><h3 id="newLeadAlertTitle">Você recebeu um novo lead</h3><p id="newLeadAlertSubtitle">Abra os detalhes para confirmar a visualização.</p></div>
+        <button class="close-btn" id="newLeadAlertClose" aria-label="Lembrar depois">×</button>
+      </div>
+      <div class="new-lead-summary">
+        <div class="new-lead-name" id="newLeadAlertName">Lead</div>
+        <div class="new-lead-meta">
+          <div class="new-lead-item"><span>Telefone</span><strong id="newLeadAlertPhone">—</strong></div>
+          <div class="new-lead-item"><span>Cidade</span><strong id="newLeadAlertCity">—</strong></div>
+          <div class="new-lead-item"><span>Gasto mensal</span><strong id="newLeadAlertSpend">—</strong></div>
+          <div class="new-lead-item"><span>Recebido</span><strong id="newLeadAlertTime">—</strong></div>
+        </div>
+      </div>
+      <div class="new-lead-reminder-note">Se você fechar sem visualizar, este aviso aparecerá novamente em <strong>30 minutos</strong>.</div>
+      <div class="modal-actions"><button class="btn" id="newLeadAlertLater" type="button">Lembrar em 30 min</button><button class="btn primary" id="newLeadAlertView" type="button">Visualizar lead</button></div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <div class="modal-head"><div><h3 id="modalTitle">Detalhes do lead</h3><p id="modalSubtitle"></p></div><button class="close-btn" id="modalClose" aria-label="Fechar">×</button></div>
@@ -771,7 +807,8 @@
         { label:'Dr. Pedrinho', sheetId:'1Nl5gJa0mNOduBY5Sn5C_VLjHDrnPRypRIBcyYhdnEtc', gid:'0', city:'Doutor Pedrinho' },
         { label:'Blumenau', sheetId:'1V3paQg3q15KF-LHW898r1oLzET4-MRVzjPfSL3CLN6g', gid:'0', city:'Blumenau' }
       ],
-      refreshMs: 60000
+      refreshMs: 60000,
+      leadReminderMs: 30 * 60 * 1000
     };
 
     const DEFAULT_APP_CONFIG = {
@@ -812,7 +849,8 @@
       }
     ];
     const cloneDefaultRegions = () => DEFAULT_REGIONS.map(r=>({name:r.name,cities:[...r.cities]}));
-    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set(), transferRow: null };
+    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set(), transferRow: null, alertLeadKey: null, alertLeadRow: null };
+    const LEAD_ALERT_FEATURE_START = new Date('2026-09-28T10:00:00-03:00').getTime();
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
     const ACCESS_RULES = `rules_version = '2';
@@ -854,7 +892,8 @@ service cloud.${'fire'+'store'} {
         && resource.data.repUid == request.auth.uid
         && request.resource.data.repUid == resource.data.repUid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'contacted','contactedAt','contactedByUid','contactedByName'
+          'contacted','contactedAt','contactedByUid','contactedByName',
+          'viewed','viewedAt','viewedByUid','viewedByName'
         ])
       );
     }
@@ -1084,7 +1123,7 @@ service cloud.${'fire'+'store'} {
       else snap=await getDocs(query(collection(cloud.db,'clientes'),where('repUid','==',state.user.uid)));
       state.customerDocs=snap.docs.map(d=>({id:d.id,...d.data()}));
       state.assignments={};
-      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||'',transferredAt:c.transferredAt||'',transferredByUid:c.transferredByUid||'',transferredByName:c.transferredByName||''};
+      for(const c of state.customerDocs) state.assignments[c.id]={repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:c.id,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||'',viewed:c.viewed===true,viewedAt:c.viewedAt||'',viewedByUid:c.viewedByUid||'',viewedByName:c.viewedByName||'',transferredAt:c.transferredAt||'',transferredByUid:c.transferredByUid||'',transferredByName:c.transferredByName||''};
     }
 
     function repsForCity(city){
@@ -1139,7 +1178,7 @@ service cloud.${'fire'+'store'} {
       await runTransaction(cloud.db,async tx=>{
         const customerSnap=await tx.get(customerRef);
         if(customerSnap.exists()){
-          const c=customerSnap.data();result={status:'duplicate',assignment:{repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:phone,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||''}};return;
+          const c=customerSnap.data();result={status:'duplicate',assignment:{repId:c.repUid,repUid:c.repUid,repName:c.repName,region:c.region,assignedAt:c.assignedAt,customerKey:phone,firstLeadAt:c.firstLeadAt,contacted:c.contacted===true,contactedAt:c.contactedAt||'',contactedByUid:c.contactedByUid||'',contactedByName:c.contactedByName||'',viewed:c.viewed===true,viewedAt:c.viewedAt||'',viewedByUid:c.viewedByUid||'',viewedByName:c.viewedByName||''}};return;
         }
 
         const cursorSnap=await tx.get(cursorRef);
@@ -1151,7 +1190,7 @@ service cloud.${'fire'+'store'} {
         const rep=reps[nextIndex];
         const repUid=rep.uid||rep.id;
         const now=new Date().toISOString();
-        const payload={phone,repUid,repName:rep.name,region,city,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row};
+        const payload={phone,repUid,repName:rep.name,region,city,assignedAt:now,firstLeadAt:leadDate(row)||now,leadData:row,viewed:false,viewedAt:'',viewedByUid:'',viewedByName:''};
         const sequence=Math.max(0,Number(cursorData.sequence||0))+1;
 
         tx.set(customerRef,payload);
@@ -1164,7 +1203,7 @@ service cloud.${'fire'+'store'} {
           sequence,
           updatedAt:now
         },{merge:true});
-        result={status:'assigned',assignment:{repId:repUid,repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt,contacted:false,contactedAt:'',contactedByUid:'',contactedByName:''}};
+        result={status:'assigned',assignment:{repId:repUid,repUid,repName:rep.name,region,assignedAt:now,customerKey:phone,firstLeadAt:payload.firstLeadAt,contacted:false,contactedAt:'',contactedByUid:'',contactedByName:'',viewed:false,viewedAt:'',viewedByUid:'',viewedByName:''}};
       });
       if(result.assignment)state.assignments[phone]=result.assignment;
       return result;
@@ -1542,7 +1581,7 @@ service cloud.${'fire'+'store'} {
           // Representante recebe somente os clientes atribuídos ao seu UID.
           state.all=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
         }
-        state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);if(manual)toast('Dados atualizados com sucesso.');
+        state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(manual)toast('Dados atualizados com sucesso.');
       }catch(err){console.error(err);setSync('error','Falha na conexão');toast(friendlyAccessError(err));state.all=[];applyFilters();}
       finally{state.loading=false;el('loadingOverlay').classList.add('hidden')}
     }
@@ -1710,6 +1749,11 @@ service cloud.${'fire'+'store'} {
         repName:rep.name,
         region:regionOf(row),
         city,
+        assignedAt:now,
+        viewed:false,
+        viewedAt:'',
+        viewedByUid:'',
+        viewedByName:'',
         transferredAt:now,
         transferredByUid:state.user.uid||state.user.id||'',
         transferredByName:state.user.name||''
@@ -1746,14 +1790,136 @@ service cloud.${'fire'+'store'} {
         const rep=assignment?.repName||'Aguardando',contacted=assignment?.contacted===true,markAllowed=canMarkContact(r);
         const contactAction=markAllowed?`<button class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contacted?'Contatado':'Marcar contato'}</span></button>`:'';
         const transferAction=(state.user?.role==='admin'&&customerKey(r))?`<button class="action-btn transfer" data-transfer="${index}" title="Transferir lead para outro representante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4 4m-4-4 4-4"/></svg></button>`:'';
-        return `<tr><td><button class="lead-cell" style="background:none;border:0;color:inherit;padding:0;text-align:left;cursor:pointer" data-detail="${index}"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></button></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${transferAction}${contactAction}</div></td></tr>`;
+        return `<tr class="lead-row" data-row-detail="${index}" tabindex="0" aria-label="Abrir detalhes de ${escapeHtml(name)}"><td><div class="lead-cell"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></div></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${transferAction}${contactAction}</div></td></tr>`;
       }).join('');
-      body.querySelectorAll('[data-detail]').forEach(btn=>btn.addEventListener('click',()=>openModal(state.filtered[+btn.dataset.detail])));
-      body.querySelectorAll('[data-contact]').forEach(btn=>btn.addEventListener('click',()=>toggleLeadContact(state.filtered[+btn.dataset.contact])));
-      body.querySelectorAll('[data-transfer]').forEach(btn=>btn.addEventListener('click',()=>openTransferLead(state.filtered[+btn.dataset.transfer])));
+
+      // Delegação de eventos: continua funcionando mesmo quando a tabela é redesenhada pelos filtros/atualização.
+      body.onclick=e=>{
+        const detailBtn=e.target.closest('[data-detail]');
+        if(detailBtn){
+          e.preventDefault();e.stopPropagation();
+          openModal(state.filtered[Number(detailBtn.dataset.detail)]);
+          return;
+        }
+        const contactBtn=e.target.closest('[data-contact]');
+        if(contactBtn){
+          e.preventDefault();e.stopPropagation();
+          toggleLeadContact(state.filtered[Number(contactBtn.dataset.contact)]);
+          return;
+        }
+        const transferBtn=e.target.closest('[data-transfer]');
+        if(transferBtn){
+          e.preventDefault();e.stopPropagation();
+          openTransferLead(state.filtered[Number(transferBtn.dataset.transfer)]);
+          return;
+        }
+        if(e.target.closest('a,button,input,select,textarea,label')) return;
+        const rowEl=e.target.closest('tr[data-row-detail]');
+        if(rowEl) openModal(state.filtered[Number(rowEl.dataset.rowDetail)]);
+      };
+      body.onkeydown=e=>{
+        if((e.key==='Enter'||e.key===' ') && e.target.matches('tr[data-row-detail]')){
+          e.preventDefault();
+          openModal(state.filtered[Number(e.target.dataset.rowDetail)]);
+        }
+      };
+    }
+
+    function leadAlertStorageKey(kind,key){
+      const uid=state.user?.uid||state.user?.id||'anon';
+      return `lead_alert_${kind}_${uid}_${key}`;
+    }
+    function isLocallyViewed(key){
+      try{return localStorage.getItem(leadAlertStorageKey('viewed',key))==='1'}catch{return false}
+    }
+    function setLocallyViewed(key){
+      try{localStorage.setItem(leadAlertStorageKey('viewed',key),'1');localStorage.removeItem(leadAlertStorageKey('next',key))}catch{}
+    }
+    function nextLeadReminderAt(key){
+      try{return Number(localStorage.getItem(leadAlertStorageKey('next',key))||0)||0}catch{return 0}
+    }
+    function postponeLeadReminder(key){
+      try{localStorage.setItem(leadAlertStorageKey('next',key),String(Date.now()+CONFIG.leadReminderMs))}catch{}
+    }
+    function isLeadViewed(row){
+      const key=customerKey(row);if(!key)return true;
+      const a=assignmentOf(row);
+      return a?.viewed===true || isLocallyViewed(key);
+    }
+    function eligibleAlertRows(){
+      if(state.user?.role!=='rep')return [];
+      const uid=state.user.uid||state.user.id;
+      return state.all.filter(row=>{
+        const key=customerKey(row),a=assignmentOf(row);if(!key||!a)return false;
+        if((a.repUid||a.repId)!==uid)return false;
+        const assigned=parseDate(a.assignedAt||a.firstLeadAt||leadDate(row));
+        if(!assigned || assigned.getTime()<LEAD_ALERT_FEATURE_START)return false;
+        if(isLeadViewed(row))return false;
+        return nextLeadReminderAt(key)<=Date.now();
+      }).sort((a,b)=>{
+        const aa=parseDate(assignmentOf(a)?.assignedAt||leadDate(a))?.getTime()||0;
+        const bb=parseDate(assignmentOf(b)?.assignedAt||leadDate(b))?.getTime()||0;
+        return aa-bb;
+      });
+    }
+    function showNewLeadAlert(row){
+      if(!row||state.user?.role!=='rep')return;
+      const key=customerKey(row);if(!key||isLeadViewed(row))return;
+      const a=assignmentOf(row);
+      state.alertLeadKey=key;state.alertLeadRow=row;
+      el('newLeadAlertName').textContent=leadName(row)||'Lead sem nome';
+      el('newLeadAlertPhone').textContent=displayPhone(leadPhone(row));
+      el('newLeadAlertCity').textContent=leadCity(row)||'—';
+      el('newLeadAlertSpend').textContent=leadSpend(row)||'—';
+      el('newLeadAlertTime').textContent=fmtDate(a?.assignedAt||a?.firstLeadAt||leadDate(row));
+      el('newLeadAlertSubtitle').textContent=`Lead direcionado para ${state.user.name||'você'}. Abra os detalhes para confirmar a visualização.`;
+      el('newLeadAlertBackdrop').classList.add('open');
+    }
+    function closeNewLeadAlert(remind=true){
+      const key=state.alertLeadKey;
+      if(remind&&key&&!isLocallyViewed(key))postponeLeadReminder(key);
+      el('newLeadAlertBackdrop').classList.remove('open');
+      state.alertLeadKey=null;state.alertLeadRow=null;
+      if(remind)setTimeout(syncLeadAlerts,180);
+    }
+    function syncLeadAlerts(){
+      if(state.user?.role!=='rep')return;
+      if(el('newLeadAlertBackdrop')?.classList.contains('open'))return;
+      if(el('modalBackdrop')?.classList.contains('open'))return;
+      const next=eligibleAlertRows()[0];
+      if(next)showNewLeadAlert(next);
+    }
+    async function markLeadViewed(row){
+      if(!row||state.user?.role!=='rep')return;
+      const key=customerKey(row),a=assignmentOf(row),uid=state.user.uid||state.user.id;
+      if(!key||!a||(a.repUid||a.repId)!==uid)return;
+      if(isLeadViewed(row))return;
+      const now=new Date().toISOString();
+      setLocallyViewed(key);
+      Object.assign(a,{viewed:true,viewedAt:now,viewedByUid:uid,viewedByName:state.user.name||''});
+      const docEntry=state.customerDocs.find(c=>c.id===key);if(docEntry)Object.assign(docEntry,{viewed:true,viewedAt:now,viewedByUid:uid,viewedByName:state.user.name||''});
+      try{
+        await setDoc(doc(cloud.db,'clientes',key),{viewed:true,viewedAt:now,viewedByUid:uid,viewedByName:state.user.name||''},{merge:true});
+      }catch(err){
+        // O registro local já impede novos lembretes neste navegador. Ao publicar as regras atualizadas,
+        // a confirmação de visualização também ficará sincronizada entre dispositivos.
+        console.warn('Não foi possível sincronizar a visualização do lead no banco:',err);
+      }
+    }
+    async function viewAlertLead(){
+      const row=state.alertLeadRow;if(!row)return;
+      await markLeadViewed(row);
+      closeNewLeadAlert(false);
+      openModal(row);
     }
 
     function openModal(row){
+      if(!row || typeof row!=='object'){
+        console.error('Lead inválido ao abrir detalhes:',row);
+        toast('Não foi possível abrir os detalhes deste lead. Atualize o painel e tente novamente.');
+        return;
+      }
+      if(state.user?.role==='rep')markLeadViewed(row);
       const name=String(leadName(row)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(row),wa=waPhone(phone);
       el('modalTitle').textContent=name;el('modalSubtitle').textContent=isTestLead(row)?'Registro de teste do formulário':'Detalhes completos recebidos da planilha';
       const a=assignmentOf(row);const details=[['Telefone',displayPhone(phone)],['Cidade',leadCity(row)||'—'],['Região',regionOf(row)],['Representante',a?.repName||'Aguardando distribuição'],['Contato comercial',a?.contacted?`Realizado em ${fmtDate(a.contactedAt)}${a.contactedByName?' por '+a.contactedByName:''}`:'Pendente'],['Última transferência',a?.transferredAt?`${fmtDate(a.transferredAt)}${a.transferredByName?' por '+a.transferredByName:''}`:'—'],['Gasto mensal',leadSpend(row)||'—'],['Prioridade',priorityOf(row).label],['Status',statusOf(row)],['Origem',isOrganic(row)?'Orgânico':'Anúncio pago'],['Plataforma',field(row,'platform')||'—'],['Data de entrada',fmtDate(leadDate(row))],['Campanha',field(row,'campaign')||'—'],['Conjunto de anúncios',field(row,'adset')||'—'],['Anúncio',field(row,'ad')||'—'],['Formulário',field(row,'form')||'—'],['ID do lead',field(row,'id')||'—']];
@@ -1774,7 +1940,7 @@ service cloud.${'fire'+'store'} {
       if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{await toggleLeadContact(row);closeModal();};
       el('modalBackdrop').classList.add('open');
     }
-    function closeModal(){el('modalBackdrop').classList.remove('open');}
+    function closeModal(){el('modalBackdrop').classList.remove('open');if(state.user?.role==='rep')setTimeout(syncLeadAlerts,120);}
     function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),3500);}
 
     function exportCsv(){
@@ -1790,18 +1956,20 @@ service cloud.${'fire'+'store'} {
     el('clearFilters').addEventListener('click',()=>{el('searchInput').value='';el('periodFilter').value='all';el('cityFilter').value='all';el('statusFilter').value='all';el('originFilter').value='all';applyFilters();});
     el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);el('sheetBtn').addEventListener('click',openSheetChooser);
     el('sheetChooserClose').addEventListener('click',closeSheetChooser);el('sheetChooserBackdrop').addEventListener('click',e=>{if(e.target===el('sheetChooserBackdrop'))closeSheetChooser();});document.querySelectorAll('[data-sheet-url]').forEach(btn=>btn.addEventListener('click',()=>openSheetUrl(btn.dataset.sheetUrl)));
+    el('newLeadAlertClose').addEventListener('click',()=>closeNewLeadAlert(true));el('newLeadAlertLater').addEventListener('click',()=>closeNewLeadAlert(true));el('newLeadAlertView').addEventListener('click',viewAlertLead);el('newLeadAlertBackdrop').addEventListener('click',e=>{if(e.target===el('newLeadAlertBackdrop'))closeNewLeadAlert(true);});
     el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
     el('transferClose').addEventListener('click',closeTransferLead);el('transferCancel').addEventListener('click',closeTransferLead);el('transferConfirm').addEventListener('click',transferLead);el('transferBackdrop').addEventListener('click',e=>{if(e.target===el('transferBackdrop'))closeTransferLead();});
     el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
     el('teamBtn').addEventListener('click',openTeam);el('copyCurrentRulesBtn').addEventListener('click',copyAccessRules);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
     el('loginForm').addEventListener('submit',loginUser);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyAccessRules);el('copyRulesBtn').addEventListener('click',copyAccessRules);
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser()}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(el('newLeadAlertBackdrop').classList.contains('open'))closeNewLeadAlert(true);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
     updateSetupControls();
     (async()=>{
       try{await initServices(DEFAULT_APP_CONFIG)}catch(err){console.error(err);showConnectionError(friendlyAccessError(err))}
     })();
     setInterval(()=>{if(state.user)refreshData(false)},CONFIG.refreshMs);
+    setInterval(()=>{if(state.user?.role==='rep')syncLeadAlerts()},60000);
   </script>
 </body>
 </html>
