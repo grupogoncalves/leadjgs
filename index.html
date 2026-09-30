@@ -534,7 +534,7 @@
       </div>
       <div class="auth-form">
         <div class="auth-error" id="connectionError"></div>
-        <div class="setup-actions"><button class="btn initial-setup-only" id="copyRulesBtn" type="button">Copiar regras de acesso</button></div>
+        <div class="setup-actions"><button class="btn primary" id="retryConnectionBtn" type="button">Tentar novamente</button><button class="btn initial-setup-only" id="copyRulesBtn" type="button">Copiar regras de acesso</button></div>
       </div>
       <div class="auth-hint">Confira se o banco de dados está criado e se as regras de acesso foram publicadas para este projeto.</div>
       <div class="setup-note">Projeto configurado: <code>leads-107a4</code>.</div>
@@ -791,14 +791,36 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    const sdkBase = 'https://www.gstatic.com/' + 'fire' + 'basejs/12.17.1/';
-    const appSdk = await import(sdkBase + 'fire' + 'base-app.js');
-    const authSdk = await import(sdkBase + 'fire' + 'base-auth.js');
-    const dataSdk = await import(sdkBase + 'fire' + 'base-' + 'fire' + 'store.js');
-    const { initializeApp, deleteApp } = appSdk;
-    const { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updatePassword, deleteUser } = authSdk;
-    const getDatabase = dataSdk['get' + 'Fire' + 'store'];
-    const { doc, getDoc, setDoc, getDocs, collection, query, where, runTransaction, deleteDoc } = dataSdk;
+    // A interface inicia primeiro. O Firebase é carregado depois, com fallback e tratamento de erro.
+    // Assim, uma falha externa não mata todos os botões e eventos da tela.
+    let initializeApp, deleteApp, getAuth, setPersistence, browserLocalPersistence,
+        signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
+        sendPasswordResetEmail, updatePassword, deleteUser, getDatabase, doc, getDoc, setDoc,
+        getDocs, collection, query, where, runTransaction, deleteDoc;
+
+    async function loadFirebaseSdk(){
+      const versions=['12.17.1','12.0.0','11.10.0'];
+      let lastError=null;
+      for(const version of versions){
+        try{
+          const sdkBase=`https://www.gstatic.com/firebasejs/${version}/`;
+          const [appSdk,authSdk,dataSdk]=await Promise.all([
+            import(sdkBase+'firebase-app.js'),
+            import(sdkBase+'firebase-auth.js'),
+            import(sdkBase+'firebase-firestore.js')
+          ]);
+          ({initializeApp,deleteApp}=appSdk);
+          ({getAuth,setPersistence,browserLocalPersistence,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword,sendPasswordResetEmail,updatePassword,deleteUser}=authSdk);
+          getDatabase=dataSdk.getFirestore;
+          ({doc,getDoc,setDoc,getDocs,collection,query,where,runTransaction,deleteDoc}=dataSdk);
+          return true;
+        }catch(err){
+          lastError=err;
+          console.warn(`Falha ao carregar Firebase ${version}`,err);
+        }
+      }
+      throw lastError || new Error('Não foi possível carregar os módulos do Firebase.');
+    }
     const CONFIG = {
       sheetId: '14yEfwltsi_aaf9CD_dFZ9WYagbdPpqtASsAgYUchzpM',
       gid: '0',
@@ -925,6 +947,7 @@ service cloud.${'fire'+'store'} {
     }
     async function initServices(config){
       if(cloud.ready) return true;
+      await loadFirebaseSdk();
       cloud.config=config;
       cloud.app=initializeApp(config);
       cloud.auth=getAuth(cloud.app);
@@ -1965,9 +1988,22 @@ service cloud.${'fire'+'store'} {
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(el('newLeadAlertBackdrop').classList.contains('open'))closeNewLeadAlert(true);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
     updateSetupControls();
-    (async()=>{
-      try{await initServices(DEFAULT_APP_CONFIG)}catch(err){console.error(err);showConnectionError(friendlyAccessError(err))}
-    })();
+
+    async function bootApplication(){
+      el('connectionScreen').classList.add('hidden');
+      el('loadingOverlay').classList.remove('hidden');
+      el('connectionError').textContent='';
+      try{
+        await initServices(DEFAULT_APP_CONFIG);
+      }catch(err){
+        console.error(err);
+        cloud.ready=false;
+        const msg=friendlyAccessError(err);
+        showConnectionError(msg || 'Falha ao carregar os serviços. Verifique sua internet e tente novamente.');
+      }
+    }
+    el('retryConnectionBtn').addEventListener('click',bootApplication);
+    bootApplication();
     setInterval(()=>{if(state.user)refreshData(false)},CONFIG.refreshMs);
     setInterval(()=>{if(state.user?.role==='rep')syncLeadAlerts()},60000);
   </script>
