@@ -798,17 +798,20 @@
         sendPasswordResetEmail, updatePassword, deleteUser, getDatabase, doc, getDoc, setDoc,
         getDocs, collection, query, where, runTransaction, deleteDoc;
 
+    function withTimeout(promise,ms,message){
+      let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(message)),ms)})]).finally(()=>clearTimeout(timer));
+    }
     async function loadFirebaseSdk(){
       const versions=['12.17.1','12.0.0','11.10.0'];
       let lastError=null;
       for(const version of versions){
         try{
           const sdkBase=`https://www.gstatic.com/firebasejs/${version}/`;
-          const [appSdk,authSdk,dataSdk]=await Promise.all([
+          const [appSdk,authSdk,dataSdk]=await withTimeout(Promise.all([
             import(sdkBase+'firebase-app.js'),
             import(sdkBase+'firebase-auth.js'),
             import(sdkBase+'firebase-firestore.js')
-          ]);
+          ]),12000,'O carregamento dos serviços demorou demais.');
           ({initializeApp,deleteApp}=appSdk);
           ({getAuth,setPersistence,browserLocalPersistence,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword,sendPasswordResetEmail,updatePassword,deleteUser}=authSdk);
           getDatabase=dataSdk.getFirestore;
@@ -952,7 +955,7 @@ service cloud.${'fire'+'store'} {
       cloud.app=initializeApp(config);
       cloud.auth=getAuth(cloud.app);
       cloud.db=getDatabase(cloud.app);
-      await setPersistence(cloud.auth,browserLocalPersistence);
+      try{await setPersistence(cloud.auth,browserLocalPersistence)}catch{console.warn('Persistência de sessão indisponível neste navegador.')} 
       cloud.ready=true;
       startAuthObserver();
       return true;
@@ -965,13 +968,17 @@ service cloud.${'fire'+'store'} {
       el('connectionScreen').classList.add('hidden');el('authScreen').classList.remove('hidden');el('loadingOverlay').classList.add('hidden');
       el('loginError').textContent=message;
     }
+    async function copyText(text){
+      try{await navigator.clipboard.writeText(text);toast('Resumo copiado.');}
+      catch{prompt('Copie o resumo:',text)}
+    }
     async function copyAccessRules(){
       try{await navigator.clipboard.writeText(ACCESS_RULES);toast('Regras de acesso copiadas. Cole em Banco de dados → Regras e publique.');}
       catch{prompt('Copie as regras de acesso:',ACCESS_RULES)}
     }
 
     const SETUP_COMPLETE_KEY='painel_leads_setup_complete_v1';
-    function isSetupComplete(){return localStorage.getItem(SETUP_COMPLETE_KEY)==='1'}
+    function isSetupComplete(){try{return localStorage.getItem(SETUP_COMPLETE_KEY)==='1'}catch{return false}}
     function updateSetupControls(){
       const hidden=isSetupComplete();
       document.querySelectorAll('.initial-setup-only').forEach(btn=>btn.classList.toggle('setup-hidden',hidden));
@@ -994,7 +1001,7 @@ service cloud.${'fire'+'store'} {
     function customerKey(row){
       // REGRA ÚNICA: somente o telefone identifica o cliente e impede nova distribuição.
       const phone=identityPhone(leadPhone(row));
-      return phone.length>=10 ? phone : '';
+      return /^(?:[1-9]\d{9}|[1-9]\d{10})$/.test(phone) ? phone : '';
     }
     function leadKey(row){return customerKey(row)}
     function uniqueCustomerRows(rows){
@@ -1063,7 +1070,7 @@ service cloud.${'fire'+'store'} {
 
       // Garante o mapa regional padrão. Também migra a configuração antiga
       // que continha apenas Jaraguá do Sul, sem sobrescrever mapas já personalizados.
-      if(isSystemAdmin){
+      if(isSystemAdmin || (profileSnap.exists()&&profileSnap.data().role==='admin')){
         const regSnap=await getDoc(regRef);
         const items=regSnap.exists()?(regSnap.data().items||[]):[];
         const legacyJaragua=items.length===1
@@ -1090,11 +1097,11 @@ service cloud.${'fire'+'store'} {
       el('userName').textContent=user.name;el('userAvatar').textContent=initials(user.name);el('userRole').textContent=user.role==='admin'?'Administrador':`Representante • ${user.cities?.length?user.cities.join(', '):user.region}`;
       el('teamBtn').classList.toggle('visible',user.role==='admin');el('sheetBtn').classList.toggle('visible',user.role==='admin');
     }
-    async function logout(){if(cloud.auth)await signOut(cloud.auth);state.user=null;state.all=[];state.filtered=[];state.assignments={};showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';el('teamBtn').classList.remove('visible');el('sheetBtn').classList.remove('visible');el('loginPass').value=''}
+    async function logout(){if(cloud.auth)await signOut(cloud.auth);closeNewLeadAlert(false);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser();state.user=null;state.all=[];state.filtered=[];state.assignments={};state.customerDocs=[];state.users=[];populateFilters();applyFilters();showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';el('teamBtn').classList.remove('visible');el('sheetBtn').classList.remove('visible');el('loginPass').value=''}
     function startAuthObserver(){
       if(cloud.authObserverStarted)return;cloud.authObserverStarted=true;
       onAuthStateChanged(cloud.auth,async authUser=>{
-        if(!authUser){state.user=null;showLogin();return}
+        if(!authUser){state.user=null;state.all=[];state.filtered=[];state.assignments={};state.customerDocs=[];applyFilters();el('loadingOverlay').classList.add('hidden');showLogin();return}
         try{
           el('loadingOverlay').classList.remove('hidden');
           const profile=await bootstrapOrLoadProfile(authUser);setSession(profile);await loadCloudState();await refreshData();
@@ -1153,7 +1160,8 @@ service cloud.${'fire'+'store'} {
       const cityKey=normalize(canonicalCity(city));
       return getUsers().filter(u=>{
         if(u.role!=='rep'||u.active===false) return false;
-        const cities=Array.isArray(u.cities)?u.cities.filter(Boolean):[];
+        const explicit=Array.isArray(u.cities)?u.cities.filter(Boolean):[];
+        const cities=explicit.length?explicit:(getRegions().find(r=>normalize(r.name)===normalize(u.region))?.cities||[]);
         return cities.some(c=>normalize(canonicalCity(c))===cityKey);
       }).sort((a,b)=>(Number(a.sortOrder||0)-Number(b.sortOrder||0))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
     }
@@ -1326,7 +1334,10 @@ service cloud.${'fire'+'store'} {
     }
     function closeRepCitiesEditor(){el('repCitiesBackdrop').classList.remove('open');state.editingRepId=null;state.editingCities=new Set()}
     function renderEditRepCities(){
-      const groups=cloneDefaultRegions();
+      const groups=(getRegions().length?getRegions():cloneDefaultRegions()).map(r=>({...r,cities:[...(r.cities||[])]}));
+      const known=new Set(groups.flatMap(r=>r.cities||[]).map(normalize));
+      const extra=[...state.editingCities].filter(c=>!known.has(normalize(c)));
+      if(extra.length)groups.push({name:'Outras cidades cadastradas',cities:extra});
       const selected=new Set([...state.editingCities].map(normalize));
       el('editRepCities').innerHTML=groups.map(group=>`
         <div class="city-region-group">
@@ -1352,7 +1363,7 @@ service cloud.${'fire'+'store'} {
     }
     async function saveRepCities(){
       const id=state.editingRepId,u=getUsers().find(x=>x.id===id);if(!u)return;
-      const allCities=cloneDefaultRegions().flatMap(r=>r.cities||[]);
+      const allCities=[...new Set([...getRegions().flatMap(r=>r.cities||[]),...state.editingCities])];
       const selected=new Set([...state.editingCities].map(normalize));
       const validCities=allCities.filter(city=>selected.has(normalize(city)));
       if(!validCities.length){toast('Marque pelo menos uma cidade para este representante.');return}
@@ -1370,9 +1381,9 @@ service cloud.${'fire'+'store'} {
       ev.preventDefault();
       const name=el('repName').value.trim(),email=el('repLogin').value.trim().toLowerCase(),password=el('repPassword').value,role=el('repRole').value,selectedRegion=el('repRegion').value;
       const region=role==='admin'?'Todas':selectedRegion;
-      const cities=[];
+      const cities=role==='rep'?[...(getRegions().find(r=>r.name===region)?.cities||[])]:[];
       if(!name||!email||password.length<6||(role==='rep'&&!region)){toast('Preencha nome, e-mail, tipo de acesso e uma senha de pelo menos 6 caracteres. Para representante, selecione a região.');return}
-      let secondaryApp,secondaryAuth,cred;
+      let secondaryApp,secondaryAuth,cred,profileSaved=false;
       try{
         secondaryApp=initializeApp(cloud.config,'provision_'+Date.now());
         secondaryAuth=getAuth(secondaryApp);
@@ -1380,6 +1391,7 @@ service cloud.${'fire'+'store'} {
         const reps=getUsers().filter(u=>u.role==='rep');
         const nextOrder=role==='rep'?(reps.length?Math.max(...reps.map(x=>Number(x.sortOrder||0)))+1:1):0;
         await setDoc(doc(cloud.db,'usuarios',cred.user.uid),{name,email,role,region,cities,active:true,sortOrder:nextOrder,createdAt:new Date().toISOString()});
+        profileSaved=true;
         await signOut(secondaryAuth);
         ev.target.reset();
         el('repRole').value='rep';
@@ -1390,7 +1402,8 @@ service cloud.${'fire'+'store'} {
         toast(role==='admin'?'Administrador criado com acesso total.':'Representante criado e incluído na roleta.');
       }catch(err){
         console.error(err);
-        if(cred?.user){try{await deleteUser(cred.user)}catch{}}
+        if(cred?.user&&!profileSaved){try{await deleteUser(cred.user)}catch{}}
+        if(profileSaved){toast('Usuário criado. Não foi possível atualizar a lista; clique em Atualizar.');return}
         toast(friendlyAccessError(err));
       }finally{if(secondaryApp)await deleteApp(secondaryApp).catch(()=>{})}
     }
@@ -1479,14 +1492,20 @@ service cloud.${'fire'+'store'} {
       if(value instanceof Date && !Number.isNaN(value.getTime())) return value;
       const s = String(value ?? '').trim();
       if(!s) return null;
-      const d = new Date(s);
-      if(!Number.isNaN(d.getTime())) return d;
-      const br = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
-      if(br) return new Date(+br[3],+br[2]-1,+br[1],+(br[4]||0),+(br[5]||0));
+      const br=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+      if(br){
+        const d=new Date(+br[3],+br[2]-1,+br[1],+(br[4]||0),+(br[5]||0),+(br[6]||0));
+        return d.getFullYear()===+br[3]&&d.getMonth()===+br[2]-1&&d.getDate()===+br[1]?d:null;
+      }
+      const g=s.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+      if(g)return new Date(+g[1],+g[2],+g[3],+(g[4]||0),+(g[5]||0),+(g[6]||0));
+      const d=new Date(s);
+      if(!Number.isNaN(d.getTime()))return d;
       return null;
     }
 
     function parseMoney(value){
+      if(typeof value==='number')return Number.isFinite(value)?value:null;
       const s = String(value ?? '').toLowerCase();
       if(!s || s.includes('dummy data')) return null;
       const nums = [...s.matchAll(/\d[\d.\s]*(?:,\d+)?/g)].map(m => Number(m[0].replace(/\s/g,'').replace(/\./g,'').replace(',','.'))).filter(Number.isFinite);
@@ -1503,7 +1522,7 @@ service cloud.${'fire'+'store'} {
       return String(value ?? '').replace(/^p:/i,'') || '—';
     }
     function waPhone(value){
-      let p=cleanPhone(value); if(!p) return ''; if((p.length===10||p.length===11)&&!p.startsWith('55')) p='55'+p; return p;
+      const p=identityPhone(value); return /^(?:[1-9]\d{9}|[1-9]\d{10})$/.test(p)?'55'+p:'';
     }
     function isTestLead(row){ return Object.values(row).some(v => String(v).includes('<test lead: dummy data')); }
     function isOrganic(row){
@@ -1558,37 +1577,41 @@ service cloud.${'fire'+'store'} {
     const google = window.google = window.google || {};
     google.visualization = google.visualization || {};
     google.visualization.Query = google.visualization.Query || {};
-    let pendingResolve=null, pendingReject=null;
-    google.visualization.Query.setResponse = function(response){
-      if(pendingResolve){ try{pendingResolve(gvizToRows(response));}catch(e){pendingReject?.(e);} finally{pendingResolve=pendingReject=null;} }
-    };
-
+    let sheetRequestSequence=0;
+    const sheetCache=new Map();
     function loadSheet(source=CONFIG.sheetSources[0],sourceIndex=0){
       return new Promise((resolve,reject)=>{
-        pendingResolve=rows=>{
-          const city=canonicalCity(source.city||'');
-          resolve(rows.map(row=>{
-            if(city && !field(row,'city')) row.Cidade=city;
-            return row;
-          }));
+        const callback='leadSheetResponse'+(++sheetRequestSequence);
+        const script=document.createElement('script');
+        let settled=false;
+        const finish=(err,rows)=>{
+          if(settled)return;settled=true;clearTimeout(timer);script.remove();
+          window[callback]=()=>{};setTimeout(()=>delete window[callback],60000);
+          if(err)reject(err);else resolve(rows);
         };
-        pendingReject=reject;
-        const scriptId=`sheet-data-script-${sourceIndex}`;
-        const old=document.getElementById(scriptId); if(old) old.remove();
-        const script=document.createElement('script'); script.id=scriptId;
-        script.src=`https://docs.google.com/spreadsheets/d/${source.sheetId}/gviz/tq?tqx=out:json&headers=1&gid=${source.gid||'0'}&cache=${Date.now()}`;
-        script.onerror=()=>{pendingResolve=pendingReject=null; reject(new Error(`Não foi possível acessar a planilha de ${source.label}. Verifique se ela está compartilhada como “Qualquer pessoa com o link”.`));};
+        window[callback]=response=>{
+          try{const city=canonicalCity(source.city||'');
+            finish(null,gvizToRows(response).map(row=>{
+              if(city&&!field(row,'city'))row.Cidade=city;return row;
+            }));
+          }catch(err){finish(err)}
+        };
+        const timer=setTimeout(()=>finish(new Error(`A planilha de ${source.label} não respondeu a tempo.`)),15000);
+        script.src=`https://docs.google.com/spreadsheets/d/${source.sheetId}/gviz/tq?tqx=${encodeURIComponent('out:json;responseHandler:'+callback)}&headers=1&gid=${encodeURIComponent(source.gid||'0')}&cache=${Date.now()}`;
+        script.onerror=()=>finish(new Error(`Não foi possível acessar a planilha de ${source.label}. Verifique o compartilhamento.`));
         document.head.appendChild(script);
-        setTimeout(()=>{if(pendingReject){pendingResolve=pendingReject=null; reject(new Error(`A conexão com a planilha de ${source.label} demorou demais.`));}},15000);
       });
     }
-
     async function loadAllSheets(){
-      const merged=[];
-      for(let i=0;i<CONFIG.sheetSources.length;i++){
-        const rows=await loadSheet(CONFIG.sheetSources[i],i);
-        merged.push(...rows);
-      }
+      const results=await Promise.allSettled(CONFIG.sheetSources.map(loadSheet));
+      const merged=[],warnings=[];let successes=0;
+      results.forEach((result,i)=>{
+        const source=CONFIG.sheetSources[i],key=source.sheetId+':'+source.gid;
+        if(result.status==='fulfilled'){successes++;sheetCache.set(key,result.value);merged.push(...result.value)}
+        else{warnings.push(source.label);merged.push(...(sheetCache.get(key)||[]))}
+      });
+      state.sheetWarnings=warnings;
+      if(!successes)throw new Error('Nenhuma planilha pôde ser consultada. Os últimos dados foram preservados.');
       return merged;
     }
 
@@ -1604,8 +1627,8 @@ service cloud.${'fire'+'store'} {
           // Representante recebe somente os clientes atribuídos ao seu UID.
           state.all=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
         }
-        state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(manual)toast('Dados atualizados com sucesso.');
-      }catch(err){console.error(err);setSync('error','Falha na conexão');toast(friendlyAccessError(err));state.all=[];applyFilters();}
+        state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(state.sheetWarnings?.length){setSync('error','Atualização parcial');toast('Planilhas indisponíveis: '+state.sheetWarnings.join(', ')+'. Últimos dados preservados.')}else if(manual)toast('Dados atualizados com sucesso.');
+      }catch(err){console.error(err);setSync('error','Falha na conexão • dados preservados');toast(friendlyAccessError(err));populateFilters();applyFilters();}
       finally{state.loading=false;el('loadingOverlay').classList.add('hidden')}
     }
 
@@ -1615,8 +1638,8 @@ service cloud.${'fire'+'store'} {
 
     function populateFilters(){
       const citySel=el('cityFilter'), statusSel=el('statusFilter'); const prevCity=citySel.value, prevStatus=statusSel.value;
-      const cities=[...new Set(state.all.map(r=>String(leadCity(r)).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-      const statuses=[...new Set(state.all.map(statusOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+      const cities=[...new Set(scopeRows(state.all).map(r=>String(leadCity(r)).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+      const statuses=[...new Set(scopeRows(state.all).map(statusOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
       citySel.innerHTML='<option value="all">Todas as cidades</option>'+cities.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
       statusSel.innerHTML='<option value="all">Todos os status</option>'+statuses.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
       if([...citySel.options].some(o=>o.value===prevCity)) citySel.value=prevCity;
@@ -1647,7 +1670,7 @@ service cloud.${'fire'+'store'} {
     function renderAll(){ renderKpis(); renderTrend(); renderCityRanking(); renderSpendBars(); renderOrigin(); renderStatus(); renderTable(); el('footerInfo').textContent=`${plural(state.filtered.length,'lead exibido','leads exibidos')} de ${scopeRows(state.all).length}`; }
 
     function renderKpis(){
-      const rows=state.filtered, total=rows.length, valid=rows.filter(r=>normalize(statusOf(r))==='valid'||normalize(statusOf(r)).includes('valid')).length;
+      const rows=state.filtered, total=rows.length, valid=rows.filter(r=>normalize(statusOf(r))==='valid'||(normalize(statusOf(r)).includes('valid')&&!normalize(statusOf(r)).includes('inval'))).length;
       const hot=rows.filter(r=>priorityOf(r).rank===3).length, today=rows.filter(r=>parseDate(leadDate(r))?.toDateString()===new Date().toDateString()).length;
       const spends=rows.map(r=>parseMoney(leadSpend(r))).filter(Number.isFinite);
       const avg=spends.length?spends.reduce((a,b)=>a+b,0)/spends.length:null, paid=rows.filter(r=>!isOrganic(r)).length;
@@ -1705,7 +1728,7 @@ service cloud.${'fire'+'store'} {
       const data=countBy(state.filtered,statusOf).slice(0,7),max=Math.max(1,...data.map(d=>d[1])),colors=['#4ee29a','#4dd7ee','#5c8fff','#ffbd59','#a789ff','#ff6b7b','#7893a7'];
       el('statusBars').innerHTML=data.length?data.map(([name,value],i)=>`<div><div class="mini-bar-top"><span>${escapeHtml(name)}</span><strong>${value}</strong></div><div class="mini-track"><div class="mini-fill" style="width:${value/max*100}%;background:${colors[i%colors.length]}"></div></div></div>`).join(''):'<div class="empty-table">Nenhum status para exibir.</div>';
     }
-    function statusBadge(status){const n=normalize(status);let cls='blue';if(n.includes('valid')||n.includes('ganh')||n.includes('fech'))cls='green';else if(n.includes('perd')||n.includes('inval')||n.includes('cancel'))cls='red';else if(n.includes('contato')||n.includes('negoc'))cls='amber';return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;}
+    function statusBadge(status){const n=normalize(status);let cls='blue';if(n.includes('perd')||n.includes('inval')||n.includes('cancel'))cls='red';else if(n.includes('valid')||n.includes('ganh')||n.includes('fech'))cls='green';else if(n.includes('contato')||n.includes('negoc'))cls='amber';return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;}
     function contactInfoOf(row){return assignmentOf(row)||{};}
     function contactBadge(row){
       const c=contactInfoOf(row);
@@ -1958,7 +1981,7 @@ service cloud.${'fire'+'store'} {
       const contactModalBtn=canMarkContact(row)?`<button class="btn ${a?.contacted?'':'primary'}" id="modalContactBtn">${a?.contacted?'Desmarcar contato':'Marcar contato realizado'}</button>`:'';
       const transferModalBtn=(state.user?.role==='admin'&&customerKey(row))?`<button class="btn" id="modalTransferBtn">${a?'Transferir lead':'Atribuir representante'}</button>`:'';
       el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${transferModalBtn}${contactModalBtn}${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
-      el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}\nContato: ${a?.contacted?'Realizado':'Pendente'}`;navigator.clipboard?.writeText(text).then(()=>toast('Resumo copiado.'));};
+      el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}\nContato: ${a?.contacted?'Realizado':'Pendente'}`;copyText(text);};
       if(el('modalTransferBtn'))el('modalTransferBtn').onclick=()=>{closeModal();openTransferLead(row);};
       if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{await toggleLeadContact(row);closeModal();};
       el('modalBackdrop').classList.add('open');
@@ -1994,7 +2017,7 @@ service cloud.${'fire'+'store'} {
       el('loadingOverlay').classList.remove('hidden');
       el('connectionError').textContent='';
       try{
-        await initServices(DEFAULT_APP_CONFIG);
+        await withTimeout(initServices(DEFAULT_APP_CONFIG),40000,'Não foi possível conectar. Verifique sua internet e tente novamente.');
       }catch(err){
         console.error(err);
         cloud.ready=false;
