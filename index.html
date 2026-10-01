@@ -1007,7 +1007,11 @@ service cloud.${'fire'+'store'} {
     function uniqueCustomerRows(rows){
       const ordered=[...rows].sort((a,b)=>(parseDate(leadDate(a))?.getTime()||0)-(parseDate(leadDate(b))?.getTime()||0));
       const seen=new Set(),unique=[];
-      for(const row of ordered){const key=customerKey(row);if(!key||seen.has(key))continue;seen.add(key);unique.push(row)}
+      for(const row of ordered){
+        const key=customerKey(row);
+        if(!key){unique.push(row);continue}
+        if(seen.has(key))continue;seen.add(key);unique.push(row)
+      }
       return unique;
     }
     const CITY_ALIASES = new Map([
@@ -1620,7 +1624,10 @@ service cloud.${'fire'+'store'} {
       try{
         await loadCloudState();
         if(state.user.role==='admin'){
-          const rows=await loadAllSheets();state.all=rows;
+          const rows=await loadAllSheets();
+          const cached=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
+          const imported=new Set(rows.map(customerKey).filter(Boolean));
+          state.all=[...rows,...cached.filter(r=>!imported.has(customerKey(r)))];
           await runRoulette(false);
           await loadCustomerCache();
         }else{
@@ -1834,8 +1841,8 @@ service cloud.${'fire'+'store'} {
       body.innerHTML=state.filtered.map((r,index)=>{
         const name=String(leadName(r)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(r),city=leadCity(r)||'—',spend=leadSpend(r)||'—',p=priorityOf(r),organic=isOrganic(r),campaign=field(r,'campaign')||field(r,'ad')||'—',date=leadDate(r),ini=initials(name),wa=waPhone(phone),region=regionOf(r),assignment=assignments[leadKey(r)];
         const rep=assignment?.repName||'Aguardando',contacted=assignment?.contacted===true,markAllowed=canMarkContact(r);
-        const contactAction=markAllowed?`<button class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contacted?'Contatado':'Marcar contato'}</span></button>`:'';
-        const transferAction=(state.user?.role==='admin'&&customerKey(r))?`<button class="action-btn transfer" data-transfer="${index}" title="Transferir lead para outro representante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4 4m-4-4 4-4"/></svg></button>`:'';
+        const contactAction=markAllowed?`<button type="button" class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contacted?'Contatado':'Marcar contato'}</span></button>`:'';
+        const transferAction=(state.user?.role==='admin'&&customerKey(r))?`<button type="button" class="action-btn transfer" data-transfer="${index}" title="Transferir lead para outro representante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4 4m-4-4 4-4"/></svg></button>`:'';
         return `<tr class="lead-row" data-row-detail="${index}" tabindex="0" aria-label="Abrir detalhes de ${escapeHtml(name)}"><td><div class="lead-cell"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></div></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${transferAction}${contactAction}</div></td></tr>`;
       }).join('');
 
@@ -1861,7 +1868,7 @@ service cloud.${'fire'+'store'} {
         }
         if(e.target.closest('a,button,input,select,textarea,label')) return;
         const rowEl=e.target.closest('tr[data-row-detail]');
-        if(rowEl) openModal(state.filtered[Number(rowEl.dataset.rowDetail)]);
+        if(rowEl){e.preventDefault();e.stopPropagation();openModal(state.filtered[Number(rowEl.dataset.rowDetail)]);}
       };
       body.onkeydown=e=>{
         if((e.key==='Enter'||e.key===' ') && e.target.matches('tr[data-row-detail]')){
