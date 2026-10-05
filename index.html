@@ -1166,7 +1166,7 @@ service cloud.${'fire'+'store'} {
       }
       const p=profileSnap.data();
       if(p.active===false) throw new Error('Este usuário está pausado. Fale com o administrador.');
-      return {id:authUser.uid,uid:authUser.uid,email:authUser.email||p.email||'',name:p.name||authUser.email||'Usuário',role:p.role||'rep',region:p.region||'Sem região',cities:Array.isArray(p.cities)?p.cities:[],active:p.active!==false,sortOrder:Number(p.sortOrder||0)};
+      return {id:authUser.uid,uid:authUser.uid,email:authUser.email||p.email||'',name:p.name||authUser.email||'Usuário',role:isSystemAdmin?'admin':(p.role||'rep'),region:isSystemAdmin?'Todas':(p.region||'Sem região'),cities:isSystemAdmin?[]:(Array.isArray(p.cities)?p.cities:[]),active:p.active!==false,sortOrder:Number(p.sortOrder||0)};
     }
     function setSession(user){
       markSetupComplete();
