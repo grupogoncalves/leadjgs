@@ -523,6 +523,40 @@
     }
   </style>
 
+
+  <style id="crm-premium-v3">
+    /* CRM PREMIUM V3 — camada visual; IDs e lógica original preservados */
+    :root{--side:#06111b;--side-w:226px;--accent:#36d792;--accent2:#56cfe6;--soft:#0a1c2a;--surface:#0c2131;--surface2:#0a1b29}
+    body{padding-left:var(--side-w);background:#07131d!important}
+    body:before{opacity:.08!important}
+    .crm-sidebar{position:fixed;inset:0 auto 0 0;width:var(--side-w);z-index:90;background:linear-gradient(180deg,#06111b 0%,#071722 100%);border-right:1px solid rgba(159,194,217,.10);padding:18px 14px;display:flex;flex-direction:column;box-shadow:18px 0 50px rgba(0,0,0,.16)}
+    .crm-side-brand{display:flex;align-items:center;gap:11px;padding:7px 8px 18px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .crm-side-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,#4ee29a,#4dd7ee);color:#052518;box-shadow:0 9px 24px rgba(78,226,154,.16)}
+    .crm-side-mark svg{width:21px;height:21px}.crm-side-brand strong{display:block;font-size:14px;letter-spacing:-.02em}.crm-side-brand span{display:block;color:#748ea0;font-size:9px;margin-top:3px;text-transform:uppercase;letter-spacing:.08em}
+    .crm-nav-label{padding:10px 10px 6px;color:#607c8f;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.11em}
+    .crm-nav{display:grid;gap:5px}.crm-nav a,.crm-nav button{width:100%;height:42px;border:0;background:transparent;color:#8fa9bb;border-radius:11px;display:flex;align-items:center;gap:11px;padding:0 11px;text-decoration:none;font:inherit;font-size:11px;font-weight:700;text-align:left;transition:.18s ease;cursor:pointer}
+    .crm-nav a svg,.crm-nav button svg{width:17px;height:17px;flex:none}.crm-nav a:hover,.crm-nav button:hover{color:#eef8fb;background:rgba(255,255,255,.045)}.crm-nav a.active{color:#dff9ef;background:linear-gradient(90deg,rgba(54,215,146,.13),rgba(86,207,230,.06));box-shadow:inset 3px 0 0 var(--accent)}
+    .crm-side-spacer{flex:1}.crm-side-live{margin-top:12px;padding:12px;border:1px solid rgba(255,255,255,.06);border-radius:13px;background:rgba(255,255,255,.025)}.crm-side-live .live-line{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:750}.crm-side-live .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(54,215,146,.08)}.crm-side-live p{margin:7px 0 0;color:#688396;font-size:9px;line-height:1.45}
+    .app{max-width:1580px!important;padding:18px 22px 34px!important}
+    .topbar{top:14px!important;border-radius:18px!important;background:rgba(8,24,36,.90)!important;border-color:rgba(160,194,218,.10)!important;box-shadow:0 10px 28px rgba(0,0,0,.16)!important;padding:11px 13px!important}
+    .topbar .logo{display:none}.title-wrap h1{font-size:20px!important}.title-wrap p{font-size:10px!important}
+    .top-actions .btn{min-height:37px!important;border-radius:10px!important}.top-actions .btn.primary{box-shadow:none!important}.sync-pill,.user-box{min-height:37px!important}
+    .crm-overview{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.75fr);gap:14px;margin-bottom:14px}
+    .crm-welcome{position:relative;overflow:hidden;border:1px solid rgba(160,194,218,.10);border-radius:20px;padding:24px 25px;background:linear-gradient(130deg,#0d2a3d 0%,#0b2233 58%,#0b2930 100%);box-shadow:0 16px 38px rgba(0,0,0,.16)}
+    .crm-welcome:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-130px;background:radial-gradient(circle,rgba(78,226,154,.20),transparent 65%)}
+    .crm-kicker{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:999px;background:rgba(78,226,154,.08);color:#88efbd;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}.crm-kicker:before{content:"";width:6px;height:6px;border-radius:50%;background:#55e1a0}
+    .crm-welcome h2{font-size:26px;letter-spacing:-.045em;margin:12px 0 7px;max-width:650px}.crm-welcome p{margin:0;color:#8da7b8;font-size:11px;line-height:1.6;max-width:640px}
+    .crm-welcome-foot{display:flex;gap:9px;align-items:center;margin-top:18px}.crm-welcome-chip{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.045);font-size:10px;color:#cfe0e8}.crm-welcome-chip strong{color:#fff}
+    .crm-latest{border:1px solid rgba(160,194,218,.10);border-radius:20px;padding:20px;background:linear-gradient(150deg,rgba(12,34,49,.96),rgba(8,24,36,.94));box-shadow:0 16px 38px rgba(0,0,0,.15);display:flex;flex-direction:column;justify-content:space-between}.crm-latest-label{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:#7893a6;font-weight:800}.crm-latest-name{font-size:20px;font-weight:820;letter-spacing:-.035em;margin:12px 0 5px}.crm-latest-meta{color:#819cad;font-size:10px;line-height:1.55}.crm-latest-time{display:flex;align-items:center;gap:7px;margin-top:15px;color:#8ce9bb;font-size:10px;font-weight:750}.crm-latest-time:before{content:"";width:7px;height:7px;border-radius:50%;background:#55e1a0;box-shadow:0 0 0 5px rgba(85,225,160,.07)}
+    .attention-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.attention-card{border:1px solid rgba(160,194,218,.09);border-radius:16px;background:rgba(9,27,41,.80);padding:14px 15px;display:grid;grid-template-columns:38px 1fr auto;gap:11px;align-items:center}.attention-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(255,189,89,.07);color:#f7bb59}.attention-card:nth-child(2) .attention-icon{background:rgba(251,113,133,.07);color:#fb7185}.attention-card:nth-child(3) .attention-icon{background:rgba(85,225,160,.07);color:#55e1a0}.attention-icon svg{width:17px;height:17px}.attention-copy span{display:block;color:#7f99aa;font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:780}.attention-copy strong{display:block;font-size:13px;margin-top:3px}.attention-value{font-size:22px;font-weight:820;letter-spacing:-.04em}
+    .hero-grid{gap:10px!important;margin-bottom:14px!important}.kpi{min-height:118px!important;padding:15px 16px!important;border-radius:16px!important;background:#0b2232!important;box-shadow:none!important;border-color:rgba(160,194,218,.09)!important}.kpi:hover{transform:none!important;border-color:rgba(160,194,218,.16)!important}.kpi:after{display:none}.kpi-icon{width:33px!important;height:33px!important}.kpi-value{font-size:31px!important;margin:13px 0 6px!important}.kpi-note{font-size:9px!important}.kpi-label{font-size:9px!important}
+    .filters{position:sticky;top:78px;z-index:30;background:rgba(8,24,36,.94)!important;border-radius:15px!important;padding:9px!important;box-shadow:0 8px 22px rgba(0,0,0,.14)!important}
+    .content-grid{gap:10px!important}.card{border-radius:16px!important;background:#0a1e2d!important;box-shadow:none!important}.chart-card{grid-column:span 8!important}.city-card{grid-column:span 4!important}.spend-card,.origin-card,.status-card{grid-column:span 4!important}.card-header{padding:15px 16px 0!important}.chart-body{height:270px!important;padding:12px 16px 16px!important}.rank-list,.mini-bars{padding-left:16px!important;padding-right:16px!important}.table-card{margin-top:2px}.table-card .card-header{padding-bottom:12px!important}.table-wrap{max-height:560px}.table-wrap th{top:0}.table-wrap tbody tr:hover{background:rgba(86,207,230,.045)!important}.action-btn{border-radius:8px!important}.badge,.assign-badge,.region-badge{border-radius:7px!important}.footer{opacity:.7}
+    .section-anchor{scroll-margin-top:140px}
+    @media(max-width:1180px){body{padding-left:78px}.crm-sidebar{width:78px;padding:14px 9px}.crm-side-brand{justify-content:center;padding:8px 0 16px}.crm-side-brand>div:last-child,.crm-nav-label,.crm-nav a span,.crm-nav button span,.crm-side-live p,.crm-side-live .live-line span{display:none}.crm-nav a,.crm-nav button{justify-content:center;padding:0}.crm-side-live{padding:11px;display:grid;place-items:center}.crm-overview{grid-template-columns:1fr}.attention-strip{grid-template-columns:1fr 1fr 1fr}.chart-card,.city-card{grid-column:span 12!important}}
+    @media(max-width:720px){body{padding-left:0}.crm-sidebar{position:sticky;top:0;width:100%;height:60px;inset:auto 0 auto 0;display:flex;flex-direction:row;padding:8px 10px;align-items:center;border-right:0;border-bottom:1px solid rgba(159,194,217,.10);z-index:120}.crm-side-brand{margin:0 7px 0 0;padding:0 9px 0 0;border:0;border-right:1px solid rgba(255,255,255,.07)}.crm-side-mark{width:36px;height:36px}.crm-nav-label,.crm-side-spacer,.crm-side-live{display:none}.crm-nav{display:flex;gap:3px;overflow:auto}.crm-nav a,.crm-nav button{width:40px;height:40px;flex:none}.app{padding:10px!important}.topbar{top:8px!important}.crm-overview{grid-template-columns:1fr}.crm-welcome{padding:19px}.crm-welcome h2{font-size:22px}.crm-latest{padding:17px}.attention-strip{grid-template-columns:1fr}.filters{top:8px!important}.chart-card,.city-card,.spend-card,.origin-card,.status-card{grid-column:span 12!important}.crm-welcome-foot{flex-wrap:wrap}}
+  </style>
+
 </head>
 <body>
 
@@ -562,6 +596,21 @@
     <div class="loader-card"><div class="spinner"></div><div>Conectando aos serviços e aos leads…</div></div>
   </div>
 
+  
+  <aside class="crm-sidebar" aria-label="Navegação principal">
+    <div class="crm-side-brand"><div class="crm-side-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.8 13.1a1 1 0 0 0 .8 1.6h5.2L10 22l8.2-11.1a1 1 0 0 0-.8-1.6h-5.2L13 2Z" fill="currentColor"/></svg></div><div><strong>Lead Control</strong><span>Comercial em tempo real</span></div></div>
+    <div class="crm-nav-label">Workspace</div>
+    <nav class="crm-nav">
+      <a class="active" href="#dashboardSection" title="Visão geral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Visão geral</span></a>
+      <a href="#insightsSection" title="Indicadores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>Indicadores</span></a>
+      <a href="#analyticsSection" title="Análises"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-7"/></svg><span>Análises</span></a>
+      <a href="#leadsSection" title="Leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg><span>Leads</span></a>
+      <button id="sideTeamBtn" type="button" title="Equipe e acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Equipe &amp; acessos</span></button>
+    </nav>
+    <div class="crm-side-spacer"></div>
+    <div class="crm-side-live"><div class="live-line"><i class="dot"></i><span>Sincronização ativa</span></div><p>Dados e distribuição acompanhados em tempo real.</p></div>
+  </aside>
+
   <main class="app">
     <header class="topbar">
       <div class="brand">
@@ -593,7 +642,26 @@
       </div>
     </header>
 
-    <section class="hero-grid">
+    <section class="crm-overview section-anchor" id="dashboardSection">
+      <article class="crm-welcome">
+        <span class="crm-kicker">Central comercial</span>
+        <h2>Priorize quem precisa de atendimento agora.</h2>
+        <p>Uma visão operacional dos leads, distribuição e ritmo comercial. O painel destaca gargalos para a equipe agir antes de perder oportunidades.</p>
+        <div class="crm-welcome-foot"><span class="crm-welcome-chip"><strong id="overviewToday">0</strong> recebidos hoje</span><span class="crm-welcome-chip"><strong id="overviewDisplayed">0</strong> exibidos agora</span><span class="crm-welcome-chip">Atualização automática</span></div>
+      </article>
+      <article class="crm-latest">
+        <div><span class="crm-latest-label">Último lead recebido</span><div class="crm-latest-name" id="attentionLatestName">Aguardando dados</div><div class="crm-latest-meta" id="attentionLatestMeta">Sincronizando com a base…</div></div>
+        <div class="crm-latest-time" id="attentionLatestTime">Tempo real</div>
+      </article>
+    </section>
+
+    <section class="attention-strip" aria-label="Atenção necessária">
+      <article class="attention-card"><span class="attention-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg></span><div class="attention-copy"><span>Atenção necessária</span><strong>Sem representante</strong></div><div class="attention-value" id="attentionUnassigned">0</div></article>
+      <article class="attention-card"><span class="attention-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.09 5.18 2 2 0 0 1 5.08 3h3a2 2 0 0 1 2 1.72"/></svg></span><div class="attention-copy"><span>Follow-up</span><strong>Ainda sem contato</strong></div><div class="attention-value" id="attentionNoContact">0</div></article>
+      <article class="attention-card"><span class="attention-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c4.4 0 8-3.6 8-8 0-5-4-8-4-12-3 2-4 5-4 7-2-1-3-3-3-5-3 2-5 5-5 9a8 8 0 0 0 8 9Z"/></svg></span><div class="attention-copy"><span>Prioridade</span><strong>Oportunidades quentes</strong></div><div class="attention-value" id="attentionHot">0</div></article>
+    </section>
+
+    <section class="hero-grid section-anchor" id="insightsSection">
       <article class="kpi" style="--accent:var(--cyan)">
         <div class="kpi-top"><span class="kpi-label">Total de leads</span><span class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span></div>
         <div class="kpi-value" id="kpiTotal">0</div>
@@ -628,7 +696,7 @@
       <button class="btn clear-btn" id="clearFilters">Limpar filtros</button>
     </section>
 
-    <section class="content-grid">
+    <section class="content-grid section-anchor" id="analyticsSection">
       <article class="card chart-card">
         <div class="card-header"><div class="card-title"><h2>Entrada de leads</h2><p>Evolução diária no período selecionado</p></div><span class="result-count" id="trendTotal">0 registros</span></div>
         <div class="chart-body"><canvas id="trendChart"></canvas><div class="chart-empty" id="trendEmpty">Ainda não há dados suficientes para formar uma tendência.</div></div>
@@ -657,7 +725,7 @@
         <div class="mini-bars" id="statusBars"></div>
       </article>
 
-      <article class="card table-card">
+      <article class="card table-card section-anchor" id="leadsSection">
         <div class="card-header">
           <div class="card-title"><h2>Lista de leads</h2><p>Clique em qualquer parte do lead para visualizar todos os dados</p></div>
           <div class="table-tools"><span class="result-count" id="tableCount">0 leads</span></div>
@@ -793,7 +861,7 @@
   <script type="module">
     // A interface inicia primeiro. O Firebase é carregado depois, com fallback e tratamento de erro.
     // Assim, uma falha externa não mata todos os botões e eventos da tela.
-    let initializeApp, deleteApp, getAuth, setPersistence, browserLocalPersistence,
+    let initializeApp, deleteApp, getApps, getApp, getAuth, setPersistence, browserLocalPersistence,
         signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
         sendPasswordResetEmail, updatePassword, deleteUser, getDatabase, doc, getDoc, setDoc,
         getDocs, collection, query, where, runTransaction, deleteDoc;
@@ -812,7 +880,7 @@
             import(sdkBase+'firebase-auth.js'),
             import(sdkBase+'firebase-firestore.js')
           ]),12000,'O carregamento dos serviços demorou demais.');
-          ({initializeApp,deleteApp}=appSdk);
+          ({initializeApp,deleteApp,getApps,getApp}=appSdk);
           ({getAuth,setPersistence,browserLocalPersistence,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword,sendPasswordResetEmail,updatePassword,deleteUser}=authSdk);
           getDatabase=dataSdk.getFirestore;
           ({doc,getDoc,setDoc,getDocs,collection,query,where,runTransaction,deleteDoc}=dataSdk);
@@ -949,10 +1017,13 @@ service cloud.${'fire'+'store'} {
       return map[code] || msg || 'Não foi possível concluir a operação.';
     }
     async function initServices(config){
-      if(cloud.ready) return true;
+      if(cloud.ready && cloud.app && cloud.auth && cloud.db) return true;
       await loadFirebaseSdk();
       cloud.config=config;
-      cloud.app=initializeApp(config);
+      // Em tentativas repetidas de conexão, reutiliza o app padrão já criado.
+      // Isso evita o erro Firebase: duplicate-app após uma inicialização parcial.
+      const existing=(typeof getApps==='function'?getApps():[]).find(a=>a.name==='[DEFAULT]');
+      cloud.app=existing || initializeApp(config);
       cloud.auth=getAuth(cloud.app);
       cloud.db=getDatabase(cloud.app);
       try{await setPersistence(cloud.auth,browserLocalPersistence)}catch{console.warn('Persistência de sessão indisponível neste navegador.')} 
@@ -1005,7 +1076,10 @@ service cloud.${'fire'+'store'} {
     }
     function leadKey(row){return customerKey(row)}
     function uniqueCustomerRows(rows){
-      const ordered=[...rows].sort((a,b)=>(parseDate(leadDate(a))?.getTime()||0)-(parseDate(leadDate(b))?.getTime()||0));
+      // Para exibição, mantém o registro MAIS RECENTE de cada telefone.
+      // A roleta continua usando o primeiro registro cronológico em runRoulette(),
+      // portanto esta correção não redistribui clientes já existentes.
+      const ordered=[...rows].sort((a,b)=>(parseDate(leadDate(b))?.getTime()||0)-(parseDate(leadDate(a))?.getTime()||0));
       const seen=new Set(),unique=[];
       for(const row of ordered){
         const key=customerKey(row);
@@ -1099,9 +1173,17 @@ service cloud.${'fire'+'store'} {
       state.user=user;
       el('authScreen').classList.add('hidden');el('connectionScreen').classList.add('hidden');el('userBox').style.display='flex';el('logoutBtn').style.display='inline-flex';
       el('userName').textContent=user.name;el('userAvatar').textContent=initials(user.name);el('userRole').textContent=user.role==='admin'?'Administrador':`Representante • ${user.cities?.length?user.cities.join(', '):user.region}`;
-      el('teamBtn').classList.toggle('visible',user.role==='admin');el('sheetBtn').classList.toggle('visible',user.role==='admin');
+      const isAdmin=user.role==='admin';
+      document.querySelectorAll('.admin-only').forEach(node=>node.classList.toggle('visible',isAdmin));
     }
-    async function logout(){if(cloud.auth)await signOut(cloud.auth);closeNewLeadAlert(false);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser();state.user=null;state.all=[];state.filtered=[];state.assignments={};state.customerDocs=[];state.users=[];populateFilters();applyFilters();showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';el('teamBtn').classList.remove('visible');el('sheetBtn').classList.remove('visible');el('loginPass').value=''}
+    async function logout(){
+      if(cloud.auth){try{await signOut(cloud.auth)}catch(err){console.warn('Falha ao encerrar sessão no Firebase:',err)}}
+      closeNewLeadAlert(false);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser();
+      state.user=null;state.all=[];state.filtered=[];state.assignments={};state.customerDocs=[];state.users=[];state.sheetWarnings=[];
+      populateFilters();applyFilters();showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';
+      document.querySelectorAll('.admin-only').forEach(node=>node.classList.remove('visible'));
+      el('loginPass').value='';
+    }
     function startAuthObserver(){
       if(cloud.authObserverStarted)return;cloud.authObserverStarted=true;
       onAuthStateChanged(cloud.auth,async authUser=>{
@@ -1632,6 +1714,8 @@ service cloud.${'fire'+'store'} {
           await loadCustomerCache();
         }else{
           // Representante recebe somente os clientes atribuídos ao seu UID.
+          // Avisos de planilha pertencem somente à sessão do administrador.
+          state.sheetWarnings=[];
           state.all=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
         }
         state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(state.sheetWarnings?.length){setSync('error','Atualização parcial');toast('Planilhas indisponíveis: '+state.sheetWarnings.join(', ')+'. Últimos dados preservados.')}else if(manual)toast('Dados atualizados com sucesso.');
@@ -1670,11 +1754,32 @@ service cloud.${'fire'+'store'} {
         }
         return true;
       });
-      state.filtered.sort((a,b)=>(parseDate(field(b,'created_time','created time'))?.getTime()||0)-(parseDate(field(a,'created_time','created time'))?.getTime()||0));
+      state.filtered.sort((a,b)=>(parseDate(leadDate(b))?.getTime()||0)-(parseDate(leadDate(a))?.getTime()||0));
       renderAll();
     }
 
-    function renderAll(){ renderKpis(); renderTrend(); renderCityRanking(); renderSpendBars(); renderOrigin(); renderStatus(); renderTable(); el('footerInfo').textContent=`${plural(state.filtered.length,'lead exibido','leads exibidos')} de ${scopeRows(state.all).length}`; }
+    function updatePremiumOverview(){
+      const rows=state.filtered||[];
+      const assignments=getAssignments();
+      const todayStart=new Date();todayStart.setHours(0,0,0,0);
+      const today=rows.filter(r=>{const d=leadDate(r);return d&&new Date(d)>=todayStart}).length;
+      const unassigned=rows.filter(r=>!assignments[leadKey(r)]).length;
+      const noContact=rows.filter(r=>{const a=assignments[leadKey(r)];return a && a.contacted!==true}).length;
+      const hot=rows.filter(r=>priorityOf(r).label==='Alta').length;
+      const sorted=[...rows].sort((a,b)=>{const da=leadDate(a),db=leadDate(b);return (db?new Date(db).getTime():0)-(da?new Date(da).getTime():0)});
+      const latest=sorted[0];
+      const put=(id,value)=>{const node=el(id);if(node)node.textContent=value};
+      put('overviewToday',today);put('overviewDisplayed',rows.length);put('attentionUnassigned',unassigned);put('attentionNoContact',noContact);put('attentionHot',hot);
+      if(latest){
+        put('attentionLatestName',String(leadName(latest)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'));
+        put('attentionLatestMeta',[leadCity(latest),displayPhone(leadPhone(latest))].filter(Boolean).join(' • ')||'Dados do lead disponíveis');
+        put('attentionLatestTime',fmtDate(leadDate(latest))||'Recebido recentemente');
+      }else{
+        put('attentionLatestName','Nenhum lead no filtro');put('attentionLatestMeta','Ajuste os filtros ou aguarde uma nova entrada.');put('attentionLatestTime','Sem registros');
+      }
+    }
+
+    function renderAll(){ renderKpis(); renderTrend(); renderCityRanking(); renderSpendBars(); renderOrigin(); renderStatus(); renderTable(); updatePremiumOverview(); el('footerInfo').textContent=`${plural(state.filtered.length,'lead exibido','leads exibidos')} de ${scopeRows(state.all).length}`; }
 
     function renderKpis(){
       const rows=state.filtered, total=rows.length, valid=rows.filter(r=>normalize(statusOf(r))==='valid'||(normalize(statusOf(r)).includes('valid')&&!normalize(statusOf(r)).includes('inval'))).length;
@@ -2019,23 +2124,50 @@ service cloud.${'fire'+'store'} {
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
     updateSetupControls();
 
+    let bootPromise=null;
     async function bootApplication(){
-      el('connectionScreen').classList.add('hidden');
-      el('loadingOverlay').classList.remove('hidden');
-      el('connectionError').textContent='';
-      try{
-        await withTimeout(initServices(DEFAULT_APP_CONFIG),40000,'Não foi possível conectar. Verifique sua internet e tente novamente.');
-      }catch(err){
-        console.error(err);
-        cloud.ready=false;
-        const msg=friendlyAccessError(err);
-        showConnectionError(msg || 'Falha ao carregar os serviços. Verifique sua internet e tente novamente.');
-      }
+      if(bootPromise)return bootPromise;
+      bootPromise=(async()=>{
+        el('connectionScreen').classList.add('hidden');
+        el('loadingOverlay').classList.remove('hidden');
+        el('connectionError').textContent='';
+        try{
+          await withTimeout(initServices(DEFAULT_APP_CONFIG),40000,'Não foi possível conectar. Verifique sua internet e tente novamente.');
+        }catch(err){
+          console.error(err);
+          cloud.ready=false;
+          const msg=friendlyAccessError(err);
+          showConnectionError(msg || 'Falha ao carregar os serviços. Verifique sua internet e tente novamente.');
+        }finally{
+          bootPromise=null;
+        }
+      })();
+      return bootPromise;
     }
     el('retryConnectionBtn').addEventListener('click',bootApplication);
     bootApplication();
     setInterval(()=>{if(state.user)refreshData(false)},CONFIG.refreshMs);
     setInterval(()=>{if(state.user?.role==='rep')syncLeadAlerts()},60000);
   </script>
+
+  <script>
+    (()=>{
+      const sideTeam=document.getElementById('sideTeamBtn');
+      if(sideTeam) sideTeam.addEventListener('click',()=>{
+        const team=document.getElementById('teamBtn');
+        if(team && (team.classList.contains('visible') || getComputedStyle(team).display!=='none')) team.click();
+        else document.getElementById('toast') && (()=>{const t=document.getElementById('toast');t.textContent='Esta área está disponível para administradores.';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)})();
+      });
+      const links=[...document.querySelectorAll('.crm-nav a[href^="#"]')];
+      const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+      const setActive=()=>{
+        let current=sections[0];
+        for(const sec of sections){if(sec.getBoundingClientRect().top<=170) current=sec}
+        links.forEach(a=>a.classList.toggle('active',current && a.getAttribute('href')==='#'+current.id));
+      };
+      addEventListener('scroll',setActive,{passive:true});setActive();
+    })();
+  </script>
+
 </body>
 </html>
