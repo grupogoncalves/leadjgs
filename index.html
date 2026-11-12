@@ -626,7 +626,7 @@
         <div class="sync-pill"><span class="sync-dot" id="syncDot"></span><span id="syncText">Conectando…</span></div>
         <div class="user-box" id="userBox" style="display:none"><span class="user-avatar" id="userAvatar">A</span><span class="user-meta"><strong id="userName">Usuário</strong><span id="userRole">Perfil</span></span></div>
         <button class="btn admin-only" id="teamBtn" title="Gerenciar usuários, acessos, representantes e regiões">Usuários &amp; Acessos</button>
-        <button class="btn admin-only" id="copyCurrentRulesBtn" title="Copiar as regras atualizadas do banco">Copiar regras</button>
+        <button class="btn admin-only" id="copyCurrentRulesBtn" title="Copiar as regras Firestore para liberar o registro de contato dos representantes">Copiar regras</button>
         <button class="btn" id="logoutBtn" title="Sair" style="display:none">Sair</button>
         <button class="btn" id="exportBtn" title="Exportar dados filtrados">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
@@ -770,7 +770,8 @@
         </section>
         <section class="admin-panel">
           <div class="roulette-info"><div class="roulette-stat"><strong id="statReps">0</strong><span>Representantes</span></div><div class="roulette-stat"><strong id="statAssigned">0</strong><span>Distribuídos</span></div><div class="roulette-stat"><strong id="statWaiting">0</strong><span>Aguardando região</span></div></div>
-          <h4>Usuários cadastrados</h4><p>Administradores têm acesso total. Representantes visualizam somente os clientes atribuídos a eles. A roleta é independente por cidade e entrega 1 cliente por vez, seguindo a ordem dos representantes: A → B → C → A.</p>
+          <h4>Usuários cadastrados</h4><p>Administradores têm acesso total. Representantes visualizam somente os clientes atribuídos a eles e podem marcar ou desmarcar contato com data e horário. A roleta é independente por cidade e entrega 1 cliente por vez, seguindo a ordem dos representantes: A → B → C → A.</p>
+          <p><strong style="color:var(--green)">Permissões de contato:</strong> se aparecer acesso negado, clique em <strong>Copiar regras</strong> no topo e publique o conteúdo em Firebase Console → Firestore Database → Regras. Salvar o HTML sozinho não publica as regras do banco.</p>
           <div class="rep-list" id="repList"></div>
           <div class="admin-actions"><button class="btn primary" id="runRouletteBtn" type="button">Rodar roleta agora</button><button class="btn" id="resetAssignmentsBtn" type="button">Reiniciar posição</button></div>
         </section>
@@ -864,7 +865,7 @@
     let initializeApp, deleteApp, getApps, getApp, getAuth, setPersistence, browserLocalPersistence,
         signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword,
         sendPasswordResetEmail, updatePassword, deleteUser, getDatabase, doc, getDoc, setDoc,
-        getDocs, collection, query, where, runTransaction, deleteDoc;
+        getDocs, collection, query, where, runTransaction, deleteDoc, updateDoc;
 
     function withTimeout(promise,ms,message){
       let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(message)),ms)})]).finally(()=>clearTimeout(timer));
@@ -883,7 +884,7 @@
           ({initializeApp,deleteApp,getApps,getApp}=appSdk);
           ({getAuth,setPersistence,browserLocalPersistence,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword,sendPasswordResetEmail,updatePassword,deleteUser}=authSdk);
           getDatabase=dataSdk.getFirestore;
-          ({doc,getDoc,setDoc,getDocs,collection,query,where,runTransaction,deleteDoc}=dataSdk);
+          ({doc,getDoc,setDoc,getDocs,collection,query,where,runTransaction,deleteDoc,updateDoc}=dataSdk);
           return true;
         }catch(err){
           lastError=err;
@@ -946,6 +947,7 @@
     const LEAD_ALERT_FEATURE_START = new Date('2026-09-28T10:00:00-03:00').getTime();
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
+    // PERMISSOES_CONTATO_REPRESENTANTE_2026_11_12 — publicar tambem no Firestore Console.
     const ACCESS_RULES = `rules_version = '2';
 service cloud.${'fire'+'store'} {
   match /databases/{database}/documents {
@@ -963,6 +965,55 @@ service cloud.${'fire'+'store'} {
         && get(userPath(request.auth.uid)).data.active != false;
     }
     function isAdmin() { return isBootstrapAdmin() || isProfileAdmin(); }
+    function isActiveRepresentative() {
+      return signedIn()
+        && exists(userPath(request.auth.uid))
+        && get(userPath(request.auth.uid)).data.role == 'rep'
+        && get(userPath(request.auth.uid)).data.active != false;
+    }
+    function isAssignedRepresentative() {
+      return isActiveRepresentative()
+        && resource.data.repUid == request.auth.uid
+        && request.resource.data.repUid == resource.data.repUid;
+    }
+    // Somente os campos de contato e visualizacao podem ser alterados pelo representante.
+    // Campos comerciais, titularidade, distribuicao, etc. continuam exclusivos do admin.
+    function canUpdateOwnLeadInteraction() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly([
+        'contacted', 'contactedAt', 'contactedByUid', 'contactedByName',
+        'viewed', 'viewedAt', 'viewedByUid', 'viewedByName'
+      ])
+      && (
+        !changed.hasAny(['contacted', 'contactedAt', 'contactedByUid', 'contactedByName'])
+        || (
+          request.resource.data.contacted is bool
+          && request.resource.data.contactedAt is string
+          && request.resource.data.contactedByUid is string
+          && request.resource.data.contactedByName is string
+          && (
+            (request.resource.data.contacted == true
+              && request.resource.data.contactedAt.size() > 0
+              && request.resource.data.contactedByUid == request.auth.uid
+              && request.resource.data.contactedByName == get(userPath(request.auth.uid)).data.name)
+            || (request.resource.data.contacted == false
+              && request.resource.data.contactedAt == ''
+              && request.resource.data.contactedByUid == ''
+              && request.resource.data.contactedByName == '')
+          )
+        )
+      )
+      && (
+        !changed.hasAny(['viewed', 'viewedAt', 'viewedByUid', 'viewedByName'])
+        || (
+          request.resource.data.viewed == true
+          && request.resource.data.viewedAt is string
+          && request.resource.data.viewedAt.size() > 0
+          && request.resource.data.viewedByUid == request.auth.uid
+          && request.resource.data.viewedByName == get(userPath(request.auth.uid)).data.name
+        )
+      );
+    }
 
     match /config/sistema {
       allow read: if signedIn();
@@ -978,17 +1029,9 @@ service cloud.${'fire'+'store'} {
       allow create, update, delete: if isAdmin();
     }
     match /clientes/{phone} {
-      allow read: if isAdmin() || (signedIn() && resource.data.repUid == request.auth.uid);
+      allow read: if isAdmin() || (isActiveRepresentative() && resource.data.repUid == request.auth.uid);
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || (
-        signedIn()
-        && resource.data.repUid == request.auth.uid
-        && request.resource.data.repUid == resource.data.repUid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'contacted','contactedAt','contactedByUid','contactedByName',
-          'viewed','viewedAt','viewedByUid','viewedByName'
-        ])
-      );
+      allow update: if isAdmin() || (isAssignedRepresentative() && canUpdateOwnLeadInteraction());
     }
     match /roletas/{region} {
       allow read, write: if isAdmin();
@@ -1044,7 +1087,7 @@ service cloud.${'fire'+'store'} {
       catch{prompt('Copie o resumo:',text)}
     }
     async function copyAccessRules(){
-      try{await navigator.clipboard.writeText(ACCESS_RULES);toast('Regras de acesso copiadas. Cole em Banco de dados → Regras e publique.');}
+      try{await navigator.clipboard.writeText(ACCESS_RULES);toast('Regras copiadas. Publique em Firebase Console → Firestore Database → Regras.');}
       catch{prompt('Copie as regras de acesso:',ACCESS_RULES)}
     }
 
@@ -1853,25 +1896,42 @@ service cloud.${'fire'+'store'} {
     function canMarkContact(row){
       const a=assignmentOf(row);
       if(!state.user||!a)return false;
-      return state.user.role==='admin'||a.repId===state.user.uid;
+      return state.user.role==='admin'||(state.user.role==='rep'&&a.repUid===state.user.uid);
     }
+    const contactsSaving=new Set();
     async function toggleLeadContact(row){
       const phone=customerKey(row),a=assignmentOf(row);
-      if(!phone||!a||!canMarkContact(row)){toast('Este lead não está disponível para registrar contato.');return;}
+      if(!phone||!a||!canMarkContact(row)){
+        toast('Você só pode registrar contato dos clientes atribuídos a você.');return false;
+      }
+      if(contactsSaving.has(phone))return false;
+      contactsSaving.add(phone);renderTable();
       const next=!a.contacted,now=next?new Date().toISOString():'';
+      const uid=state.user.uid;
+      const name=state.user.name||'';
       try{
-        await setDoc(doc(cloud.db,'clientes',phone),{
+        // updateDoc faz uma atualização pontual em um cliente já existente.
+        // Não cria clientes e obedece às regras do proprietário do lead no Firestore.
+        await updateDoc(doc(cloud.db,'clientes',phone),{
           contacted:next,
           contactedAt:now,
-          contactedByUid:next?(state.user.uid||state.user.id||''):'',
-          contactedByName:next?(state.user.name||''):''
-        },{merge:true});
-        a.contacted=next;a.contactedAt=now;a.contactedByUid=next?(state.user.uid||state.user.id||''):'';a.contactedByName=next?(state.user.name||''):'';
+          contactedByUid:next?uid:'',
+          contactedByName:next?name:''
+        });
+        Object.assign(a,{contacted:next,contactedAt:now,contactedByUid:next?uid:'',contactedByName:next?name:''});
         const cached=state.customerDocs.find(c=>c.id===phone);
-        if(cached){cached.contacted=a.contacted;cached.contactedAt=a.contactedAt;cached.contactedByUid=a.contactedByUid;cached.contactedByName=a.contactedByName;}
-        renderTable();
-        toast(next?'Contato marcado como realizado.':'Marcação de contato removida.');
-      }catch(err){console.error(err);toast(friendlyAccessError(err));}
+        if(cached)Object.assign(cached,{contacted:next,contactedAt:now,contactedByUid:next?uid:'',contactedByName:next?name:''});
+        updatePremiumOverview();
+        toast(next?'Contato registrado com data e horário.':'Marcação de contato removida.');
+        return true;
+      }catch(err){
+        console.error('Falha ao registrar contato:',err);
+        const denied=String(err?.code||'').includes('permission-denied') || String(err?.message||'').toLowerCase().includes('insufficient permissions');
+        toast(denied?'Acesso negado pelo Firestore. O administrador deve publicar as regras atualizadas (Copiar regras).':friendlyAccessError(err));
+        return false;
+      }finally{
+        contactsSaving.delete(phone);renderTable();
+      }
     }
     function closeTransferLead(){
       el('transferBackdrop').classList.remove('open');
@@ -1945,8 +2005,8 @@ service cloud.${'fire'+'store'} {
       const assignments=getAssignments();
       body.innerHTML=state.filtered.map((r,index)=>{
         const name=String(leadName(r)||'Lead sem nome').replace(/<test lead:[^>]+>/g,'Lead de teste'),phone=leadPhone(r),city=leadCity(r)||'—',spend=leadSpend(r)||'—',p=priorityOf(r),organic=isOrganic(r),campaign=field(r,'campaign')||field(r,'ad')||'—',date=leadDate(r),ini=initials(name),wa=waPhone(phone),region=regionOf(r),assignment=assignments[leadKey(r)];
-        const rep=assignment?.repName||'Aguardando',contacted=assignment?.contacted===true,markAllowed=canMarkContact(r);
-        const contactAction=markAllowed?`<button type="button" class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contacted?'Contatado':'Marcar contato'}</span></button>`:'';
+        const rep=assignment?.repName||'Aguardando',contacted=assignment?.contacted===true,markAllowed=canMarkContact(r),contactSaving=contactsSaving.has(customerKey(r));
+        const contactAction=markAllowed?`<button type="button" class="action-btn contact-btn ${contacted?'done':''}" data-contact="${index}" ${contactSaving?'disabled aria-busy="true"':''} title="${contacted?'Desmarcar contato realizado':'Marcar que o representante entrou em contato'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>${contacted?'<path d="m15 5 2 2 4-4"/>':''}</svg><span>${contactSaving?'Salvando…':contacted?'Contatado':'Marcar contato'}</span></button>`:'';
         const transferAction=(state.user?.role==='admin'&&customerKey(r))?`<button type="button" class="action-btn transfer" data-transfer="${index}" title="Transferir lead para outro representante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4 4m-4-4 4-4"/></svg></button>`:'';
         return `<tr class="lead-row" data-row-detail="${index}" tabindex="0" aria-label="Abrir detalhes de ${escapeHtml(name)}"><td><div class="lead-cell"><span class="avatar">${escapeHtml(ini||'?')}</span><span><span class="lead-name">${escapeHtml(name)}</span><span class="lead-sub">${isTestLead(r)?'Lead de teste':escapeHtml(String(field(r,'form_name','form name')||'Formulário'))}</span></span></div></td><td>${escapeHtml(displayPhone(phone))}</td><td>${escapeHtml(city)}</td><td><span class="region-badge">${escapeHtml(region)}</span></td><td><span class="assign-badge ${assignment?'':'unassigned'}">${escapeHtml(rep)}</span></td><td>${escapeHtml(spend)}</td><td><span class="priority"><span class="priority-dot" style="background:${p.color}"></span>${p.label}</span></td><td><span class="badge ${organic?'green':'violet'}">${organic?'Orgânico':'Pago'}</span></td><td>${statusBadge(statusOf(r))}</td><td>${contactBadge(r)}</td><td title="${escapeHtml(campaign)}">${escapeHtml(String(campaign).slice(0,34))}${String(campaign).length>34?'…':''}</td><td>${fmtDate(date)}</td><td><div class="actions"><button class="action-btn" data-detail="${index}" title="Ver detalhes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>${wa?`<a class="action-btn whatsapp" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg></a>`:''}${transferAction}${contactAction}</div></td></tr>`;
       }).join('');
@@ -2095,7 +2155,7 @@ service cloud.${'fire'+'store'} {
       el('modalActions').innerHTML=`<button class="btn" id="copyLeadBtn">Copiar resumo</button>${transferModalBtn}${contactModalBtn}${wa?`<a class="btn primary" href="https://wa.me/${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`:''}`;
       el('copyLeadBtn').onclick=()=>{const text=`Lead: ${name}\nTelefone: ${displayPhone(phone)}\nCidade: ${leadCity(row)||'—'}\nGasto mensal: ${leadSpend(row)||'—'}\nStatus: ${statusOf(row)}\nContato: ${a?.contacted?'Realizado':'Pendente'}`;copyText(text);};
       if(el('modalTransferBtn'))el('modalTransferBtn').onclick=()=>{closeModal();openTransferLead(row);};
-      if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{await toggleLeadContact(row);closeModal();};
+      if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{const ok=await toggleLeadContact(row);if(ok)closeModal();};
       el('modalBackdrop').classList.add('open');
     }
     function closeModal(){el('modalBackdrop').classList.remove('open');if(state.user?.role==='rep')setTimeout(syncLeadAlerts,120);}
