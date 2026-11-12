@@ -227,6 +227,9 @@
     }
 
 
+    /* Evita saltos de rolagem causados pela reconstrução periódica da tabela. */
+    .table-wrap{overflow-anchor:none}
+
     /* ===== Login, usuários e roleta de leads ===== */
     .auth-screen{position:fixed;inset:0;z-index:500;background:
       radial-gradient(circle at 12% 0%,rgba(77,215,238,.13),transparent 30%),
@@ -687,7 +690,7 @@
     <section class="filters" aria-label="Filtros do painel">
       <div class="field has-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="searchInput" type="search" placeholder="Buscar nome, telefone, cidade ou campanha…" />
+        <input id="searchInput" name="pesquisa_manual_de_leads" type="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" placeholder="Buscar nome, telefone, cidade ou campanha…" />
       </div>
       <div class="field"><select id="periodFilter"><option value="all">Todo o período</option><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option></select></div>
       <div class="field"><select id="cityFilter"><option value="all">Todas as cidades</option></select></div>
@@ -1211,8 +1214,29 @@ service cloud.${'fire'+'store'} {
       if(p.active===false) throw new Error('Este usuário está pausado. Fale com o administrador.');
       return {id:authUser.uid,uid:authUser.uid,email:authUser.email||p.email||'',name:p.name||authUser.email||'Usuário',role:isSystemAdmin?'admin':(p.role||'rep'),region:isSystemAdmin?'Todas':(p.region||'Sem região'),cities:isSystemAdmin?[]:(Array.isArray(p.cities)?p.cities:[]),active:p.active!==false,sortOrder:Number(p.sortOrder||0)};
     }
+    // Alguns navegadores (especialmente com gerenciadores de senhas) restauram
+    // o e-mail de login no campo de busca de leads e escondem a base inteira.
+    // O filtro é iniciado vazio em cada novo login; atualizações posteriores
+    // NÃO apagam uma busca legítima feita pelo usuário.
+    function clearSearchOnNewSession(){
+      const search=el('searchInput');
+      if(search)search.value='';
+    }
+    function clearAutoFilledLoginEmail(){
+      const search=el('searchInput');
+      if(!search)return false;
+      const text=search.value.trim().toLowerCase();
+      const sessionEmail=String(state.user?.email||'').trim().toLowerCase();
+      const loginEmail=String(el('loginUser')?.value||'').trim().toLowerCase();
+      if(text && text.includes('@') && (text===sessionEmail || text===loginEmail)){
+        search.value='';
+        return true;
+      }
+      return false;
+    }
     function setSession(user){
       markSetupComplete();
+      clearSearchOnNewSession();
       state.user=user;
       el('authScreen').classList.add('hidden');el('connectionScreen').classList.add('hidden');el('userBox').style.display='flex';el('logoutBtn').style.display='inline-flex';
       el('userName').textContent=user.name;el('userAvatar').textContent=initials(user.name);el('userRole').textContent=user.role==='admin'?'Administrador':`Representante • ${user.cities?.length?user.cities.join(', '):user.region}`;
@@ -1761,7 +1785,20 @@ service cloud.${'fire'+'store'} {
           state.sheetWarnings=[];
           state.all=state.customerDocs.map(c=>c.leadData||{}).filter(r=>Object.keys(r).length);
         }
-        state.lastSync=new Date();populateFilters();applyFilters();setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(state.sheetWarnings?.length){setSync('error','Atualização parcial');toast('Planilhas indisponíveis: '+state.sheetWarnings.join(', ')+'. Últimos dados preservados.')}else if(manual)toast('Dados atualizados com sucesso.');
+        // A sincronização a cada minuto não deve substituir uma pesquisa por
+        // um e-mail salvo no navegador nem deslocar a página para outra seção.
+        clearAutoFilledLoginEmail();
+        const previousScrollY=window.scrollY;
+        const hadPreviousSync=!!state.lastSync;
+        state.lastSync=new Date();populateFilters();applyFilters();
+        if(!manual && hadPreviousSync && previousScrollY>0){
+          requestAnimationFrame(()=>{
+            if(Math.abs(window.scrollY-previousScrollY)>60){
+              window.scrollTo({top:previousScrollY,behavior:'instant'});
+            }
+          });
+        }
+        setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(state.sheetWarnings?.length){setSync('error','Atualização parcial');toast('Planilhas indisponíveis: '+state.sheetWarnings.join(', ')+'. Últimos dados preservados.')}else if(manual)toast('Dados atualizados com sucesso.');
       }catch(err){console.error(err);setSync('error','Falha na conexão • dados preservados');toast(friendlyAccessError(err));populateFilters();applyFilters();}
       finally{state.loading=false;el('loadingOverlay').classList.add('hidden')}
     }
@@ -2169,7 +2206,14 @@ service cloud.${'fire'+'store'} {
     }
 
 
-    ['searchInput'].forEach(id=>el(id).addEventListener('input',applyFilters));
+    // Firefox pode restaurar valores de formulário ao voltar para a página.
+    window.addEventListener('pageshow',()=>{
+      if(clearAutoFilledLoginEmail() && state.user)applyFilters();
+    });
+    ['searchInput'].forEach(id=>el(id).addEventListener('input',()=>{
+      clearAutoFilledLoginEmail();
+      applyFilters();
+    }));
     ['periodFilter','cityFilter','statusFilter','originFilter'].forEach(id=>el(id).addEventListener('change',applyFilters));
     el('clearFilters').addEventListener('click',()=>{el('searchInput').value='';el('periodFilter').value='all';el('cityFilter').value='all';el('statusFilter').value='all';el('originFilter').value='all';applyFilters();});
     el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);el('sheetBtn').addEventListener('click',openSheetChooser);
