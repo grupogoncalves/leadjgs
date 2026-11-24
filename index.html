@@ -203,18 +203,6 @@
     .detail label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
     .detail strong{font-size:13px;word-break:break-word}
     .modal-actions{padding:0 22px 22px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
-    .new-lead-alert-modal{width:min(560px,100%);overflow:hidden}
-    .new-lead-alert-modal .modal-head{background:linear-gradient(135deg,rgba(78,226,154,.10),rgba(77,215,238,.06))}
-    .new-lead-kicker{display:inline-flex;align-items:center;gap:7px;margin-bottom:9px;padding:6px 9px;border-radius:999px;background:rgba(78,226,154,.10);color:var(--green);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}
-    .new-lead-kicker:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 5px rgba(78,226,154,.08)}
-    .new-lead-summary{padding:20px 22px 10px;display:grid;gap:12px}
-    .new-lead-name{font-size:24px;font-weight:850;letter-spacing:-.04em;line-height:1.05}
-    .new-lead-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .new-lead-item{padding:12px 13px;border:1px solid rgba(255,255,255,.05);border-radius:13px;background:rgba(255,255,255,.03)}
-    .new-lead-item span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
-    .new-lead-item strong{display:block;font-size:12px;word-break:break-word}
-    .new-lead-reminder-note{padding:0 22px 18px;color:var(--muted);font-size:11px;line-height:1.5}
-    @media(max-width:560px){.new-lead-meta{grid-template-columns:1fr}.new-lead-name{font-size:21px}}
     @media (max-width:1180px){
       .kpi{grid-column:span 6}.chart-card,.city-card{grid-column:span 12}.spend-card,.origin-card,.status-card{grid-column:span 6}.status-card{grid-column:span 12}
       .filters{grid-template-columns:repeat(3,1fr)}
@@ -833,26 +821,6 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="newLeadAlertBackdrop" role="dialog" aria-modal="true" aria-labelledby="newLeadAlertTitle">
-    <div class="modal new-lead-alert-modal">
-      <div class="modal-head">
-        <div><div class="new-lead-kicker">Novo lead recebido</div><h3 id="newLeadAlertTitle">Você recebeu um novo lead</h3><p id="newLeadAlertSubtitle">Abra os detalhes para confirmar a visualização.</p></div>
-        <button class="close-btn" id="newLeadAlertClose" aria-label="Lembrar depois">×</button>
-      </div>
-      <div class="new-lead-summary">
-        <div class="new-lead-name" id="newLeadAlertName">Lead</div>
-        <div class="new-lead-meta">
-          <div class="new-lead-item"><span>Telefone</span><strong id="newLeadAlertPhone">—</strong></div>
-          <div class="new-lead-item"><span>Cidade</span><strong id="newLeadAlertCity">—</strong></div>
-          <div class="new-lead-item"><span>Gasto mensal</span><strong id="newLeadAlertSpend">—</strong></div>
-          <div class="new-lead-item"><span>Recebido</span><strong id="newLeadAlertTime">—</strong></div>
-        </div>
-      </div>
-      <div class="new-lead-reminder-note">Se você fechar sem visualizar, este aviso aparecerá novamente em <strong>30 minutos</strong>.</div>
-      <div class="modal-actions"><button class="btn" id="newLeadAlertLater" type="button">Lembrar em 30 min</button><button class="btn primary" id="newLeadAlertView" type="button">Visualizar lead</button></div>
-    </div>
-  </div>
-
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <div class="modal-head"><div><h3 id="modalTitle">Detalhes do lead</h3><p id="modalSubtitle"></p></div><button class="close-btn" id="modalClose" aria-label="Fechar">×</button></div>
@@ -904,8 +872,7 @@
         { label:'Dr. Pedrinho', sheetId:'1Nl5gJa0mNOduBY5Sn5C_VLjHDrnPRypRIBcyYhdnEtc', gid:'0', city:'Doutor Pedrinho' },
         { label:'Blumenau', sheetId:'1V3paQg3q15KF-LHW898r1oLzET4-MRVzjPfSL3CLN6g', gid:'0', city:'Blumenau' }
       ],
-      refreshMs: 60000,
-      leadReminderMs: 30 * 60 * 1000
+      refreshMs: 60000
     };
 
     const DEFAULT_APP_CONFIG = {
@@ -946,8 +913,7 @@
       }
     ];
     const cloneDefaultRegions = () => DEFAULT_REGIONS.map(r=>({name:r.name,cities:[...r.cities]}));
-    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set(), transferRow: null, alertLeadKey: null, alertLeadRow: null };
-    const LEAD_ALERT_FEATURE_START = new Date('2026-09-28T10:00:00-03:00').getTime();
+    const state = { all: [], filtered: [], lastSync: null, loading: false, rouletteRunning: false, user: null, users: [], regions: [], assignments: {}, customerDocs: [], editingRepId: null, editingCities: new Set(), transferRow: null };
     const cloud = { app:null, auth:null, db:null, config:null, ready:false, authObserverStarted:false };
 
     // PERMISSOES_CONTATO_REPRESENTANTE_2026_11_12 — publicar tambem no Firestore Console.
@@ -1245,7 +1211,7 @@ service cloud.${'fire'+'store'} {
     }
     async function logout(){
       if(cloud.auth){try{await signOut(cloud.auth)}catch(err){console.warn('Falha ao encerrar sessão no Firebase:',err)}}
-      closeNewLeadAlert(false);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser();
+      closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser();
       state.user=null;state.all=[];state.filtered=[];state.assignments={};state.customerDocs=[];state.users=[];state.sheetWarnings=[];
       populateFilters();applyFilters();showLogin();el('userBox').style.display='none';el('logoutBtn').style.display='none';
       document.querySelectorAll('.admin-only').forEach(node=>node.classList.remove('visible'));
@@ -1798,7 +1764,7 @@ service cloud.${'fire'+'store'} {
             }
           });
         }
-        setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);syncLeadAlerts();if(state.sheetWarnings?.length){setSync('error','Atualização parcial');toast('Planilhas indisponíveis: '+state.sheetWarnings.join(', ')+'. Últimos dados preservados.')}else if(manual)toast('Dados atualizados com sucesso.');
+        setSync('ok',`Atualizado às ${state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);if(state.sheetWarnings?.length){setSync('error','Atualização parcial');toast('Planilhas indisponíveis: '+state.sheetWarnings.join(', ')+'. Últimos dados preservados.')}else if(manual)toast('Dados atualizados com sucesso.');
       }catch(err){console.error(err);setSync('error','Falha na conexão • dados preservados');toast(friendlyAccessError(err));populateFilters();applyFilters();}
       finally{state.loading=false;el('loadingOverlay').classList.add('hidden')}
     }
@@ -2088,61 +2054,12 @@ service cloud.${'fire'+'store'} {
       try{return localStorage.getItem(leadAlertStorageKey('viewed',key))==='1'}catch{return false}
     }
     function setLocallyViewed(key){
-      try{localStorage.setItem(leadAlertStorageKey('viewed',key),'1');localStorage.removeItem(leadAlertStorageKey('next',key))}catch{}
-    }
-    function nextLeadReminderAt(key){
-      try{return Number(localStorage.getItem(leadAlertStorageKey('next',key))||0)||0}catch{return 0}
-    }
-    function postponeLeadReminder(key){
-      try{localStorage.setItem(leadAlertStorageKey('next',key),String(Date.now()+CONFIG.leadReminderMs))}catch{}
+      try{localStorage.setItem(leadAlertStorageKey('viewed',key),'1')}catch{}
     }
     function isLeadViewed(row){
       const key=customerKey(row);if(!key)return true;
       const a=assignmentOf(row);
       return a?.viewed===true || isLocallyViewed(key);
-    }
-    function eligibleAlertRows(){
-      if(state.user?.role!=='rep')return [];
-      const uid=state.user.uid||state.user.id;
-      return state.all.filter(row=>{
-        const key=customerKey(row),a=assignmentOf(row);if(!key||!a)return false;
-        if((a.repUid||a.repId)!==uid)return false;
-        const assigned=parseDate(a.assignedAt||a.firstLeadAt||leadDate(row));
-        if(!assigned || assigned.getTime()<LEAD_ALERT_FEATURE_START)return false;
-        if(isLeadViewed(row))return false;
-        return nextLeadReminderAt(key)<=Date.now();
-      }).sort((a,b)=>{
-        const aa=parseDate(assignmentOf(a)?.assignedAt||leadDate(a))?.getTime()||0;
-        const bb=parseDate(assignmentOf(b)?.assignedAt||leadDate(b))?.getTime()||0;
-        return aa-bb;
-      });
-    }
-    function showNewLeadAlert(row){
-      if(!row||state.user?.role!=='rep')return;
-      const key=customerKey(row);if(!key||isLeadViewed(row))return;
-      const a=assignmentOf(row);
-      state.alertLeadKey=key;state.alertLeadRow=row;
-      el('newLeadAlertName').textContent=leadName(row)||'Lead sem nome';
-      el('newLeadAlertPhone').textContent=displayPhone(leadPhone(row));
-      el('newLeadAlertCity').textContent=leadCity(row)||'—';
-      el('newLeadAlertSpend').textContent=leadSpend(row)||'—';
-      el('newLeadAlertTime').textContent=fmtDate(a?.assignedAt||a?.firstLeadAt||leadDate(row));
-      el('newLeadAlertSubtitle').textContent=`Lead direcionado para ${state.user.name||'você'}. Abra os detalhes para confirmar a visualização.`;
-      el('newLeadAlertBackdrop').classList.add('open');
-    }
-    function closeNewLeadAlert(remind=true){
-      const key=state.alertLeadKey;
-      if(remind&&key&&!isLocallyViewed(key))postponeLeadReminder(key);
-      el('newLeadAlertBackdrop').classList.remove('open');
-      state.alertLeadKey=null;state.alertLeadRow=null;
-      if(remind)setTimeout(syncLeadAlerts,180);
-    }
-    function syncLeadAlerts(){
-      if(state.user?.role!=='rep')return;
-      if(el('newLeadAlertBackdrop')?.classList.contains('open'))return;
-      if(el('modalBackdrop')?.classList.contains('open'))return;
-      const next=eligibleAlertRows()[0];
-      if(next)showNewLeadAlert(next);
     }
     async function markLeadViewed(row){
       if(!row||state.user?.role!=='rep')return;
@@ -2161,13 +2078,6 @@ service cloud.${'fire'+'store'} {
         console.warn('Não foi possível sincronizar a visualização do lead no banco:',err);
       }
     }
-    async function viewAlertLead(){
-      const row=state.alertLeadRow;if(!row)return;
-      await markLeadViewed(row);
-      closeNewLeadAlert(false);
-      openModal(row);
-    }
-
     function openModal(row){
       if(!row || typeof row!=='object'){
         console.error('Lead inválido ao abrir detalhes:',row);
@@ -2195,7 +2105,7 @@ service cloud.${'fire'+'store'} {
       if(el('modalContactBtn'))el('modalContactBtn').onclick=async()=>{const ok=await toggleLeadContact(row);if(ok)closeModal();};
       el('modalBackdrop').classList.add('open');
     }
-    function closeModal(){el('modalBackdrop').classList.remove('open');if(state.user?.role==='rep')setTimeout(syncLeadAlerts,120);}
+    function closeModal(){el('modalBackdrop').classList.remove('open');}
     function toast(message){const t=el('toast');t.textContent=message;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),3500);}
 
     function exportCsv(){
@@ -2218,13 +2128,12 @@ service cloud.${'fire'+'store'} {
     el('clearFilters').addEventListener('click',()=>{el('searchInput').value='';el('periodFilter').value='all';el('cityFilter').value='all';el('statusFilter').value='all';el('originFilter').value='all';applyFilters();});
     el('refreshBtn').addEventListener('click',()=>refreshData(true));el('exportBtn').addEventListener('click',exportCsv);el('sheetBtn').addEventListener('click',openSheetChooser);
     el('sheetChooserClose').addEventListener('click',closeSheetChooser);el('sheetChooserBackdrop').addEventListener('click',e=>{if(e.target===el('sheetChooserBackdrop'))closeSheetChooser();});document.querySelectorAll('[data-sheet-url]').forEach(btn=>btn.addEventListener('click',()=>openSheetUrl(btn.dataset.sheetUrl)));
-    el('newLeadAlertClose').addEventListener('click',()=>closeNewLeadAlert(true));el('newLeadAlertLater').addEventListener('click',()=>closeNewLeadAlert(true));el('newLeadAlertView').addEventListener('click',viewAlertLead);el('newLeadAlertBackdrop').addEventListener('click',e=>{if(e.target===el('newLeadAlertBackdrop'))closeNewLeadAlert(true);});
     el('modalClose').addEventListener('click',closeModal);el('modalBackdrop').addEventListener('click',e=>{if(e.target===el('modalBackdrop'))closeModal();});
     el('transferClose').addEventListener('click',closeTransferLead);el('transferCancel').addEventListener('click',closeTransferLead);el('transferConfirm').addEventListener('click',transferLead);el('transferBackdrop').addEventListener('click',e=>{if(e.target===el('transferBackdrop'))closeTransferLead();});
     el('teamClose').addEventListener('click',closeTeam);el('teamBackdrop').addEventListener('click',e=>{if(e.target===el('teamBackdrop'))closeTeam();});
     el('teamBtn').addEventListener('click',openTeam);el('copyCurrentRulesBtn').addEventListener('click',copyAccessRules);el('logoutBtn').addEventListener('click',logout);el('repForm').addEventListener('submit',addRepresentative);el('repRole').addEventListener('change',updateRoleRegionState);el('repCitiesClose').addEventListener('click',closeRepCitiesEditor);el('cancelRepCitiesBtn').addEventListener('click',closeRepCitiesEditor);el('repCitiesBackdrop').addEventListener('click',e=>{if(e.target===el('repCitiesBackdrop'))closeRepCitiesEditor()});el('editSelectAllCitiesBtn').addEventListener('click',toggleAllEditCities);el('saveRepCitiesBtn').addEventListener('click',saveRepCities);updateRoleRegionState();el('saveRegionsBtn').addEventListener('click',saveRegions);el('changeAdminPasswordBtn').addEventListener('click',changeAdminPassword);el('runRouletteBtn').addEventListener('click',async()=>{await runRoulette(true);applyFilters();renderRepList();});el('resetAssignmentsBtn').addEventListener('click',resetAssignments);
     el('loginForm').addEventListener('submit',loginUser);el('createFirstAdminBtn').addEventListener('click',createFirstAdmin);el('copyRulesLoginBtn').addEventListener('click',copyAccessRules);el('copyRulesBtn').addEventListener('click',copyAccessRules);
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(el('newLeadAlertBackdrop').classList.contains('open'))closeNewLeadAlert(true);closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser()}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTeam();closeRepCitiesEditor();closeTransferLead();closeSheetChooser()}});
     let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderTrend();renderOrigin()},180)});
     updateSetupControls();
 
@@ -2251,7 +2160,6 @@ service cloud.${'fire'+'store'} {
     el('retryConnectionBtn').addEventListener('click',bootApplication);
     bootApplication();
     setInterval(()=>{if(state.user)refreshData(false)},CONFIG.refreshMs);
-    setInterval(()=>{if(state.user?.role==='rep')syncLeadAlerts()},60000);
   </script>
 
   <script>
